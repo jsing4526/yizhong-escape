@@ -124,7 +124,6 @@ const CFG = {
   SPEAKERS: {
     n: { name: '旁白', color: '#667488', icon: '···', img: null },
     x: { name: '同桌·小雨', color: '#e0709e', icon: '👧', img: 'assets/images/portraits/xiaoyu.jpg' },
-    t: { name: '班主任·张老师', color: '#7ba2d6', icon: '🧑‍🏫', img: null },
     d: { name: '张云祥·张老师', color: '#c9934f', icon: '🧑‍🏫', img: 'assets/images/portraits/zhangyunxiang.jpg' },
     g: { name: '门卫·老赵', color: '#6fae7f', icon: '🧢', img: 'assets/images/portraits/menwei.jpg' },
     z: { name: '值周生', color: '#c7a05a', icon: '🦺', img: 'assets/images/portraits/zhizhou.jpg' },
@@ -150,25 +149,25 @@ const CFG = {
   /* ---------- 遭遇生物(血量下调,防御统一为 0,等级 0-3,邪恶更高) ---------- */
   ENEMIES: {
     play: [
-      { name: '跑步的同学', hp: 60, atk: [3, 8], def: 0, align: 'neutral', weird: false },
-      { name: '踢球的同学', hp: 60, atk: [5, 12], def: 0, align: 'neutral', weird: false },
-      { name: '看台上的同学', hp: 75, atk: [2, 6], def: 0, align: 'kind', weird: false },
-      { name: '打雪仗的同学', hp: 60, atk: [4, 10], def: 0, align: 'neutral', weird: false },
-      { name: '背单词的同学', hp: 60, atk: [2, 7], def: 0, align: 'kind', weird: false }
+      { name: '跑步的同学', hp: 40, atk: [3, 8], def: 0, align: 'neutral', weird: false },
+      { name: '踢球的同学', hp: 40, atk: [5, 12], def: 0, align: 'neutral', weird: false },
+      { name: '看台上的同学', hp: 50, atk: [2, 6], def: 0, align: 'kind', weird: false },
+      { name: '打雪仗的同学', hp: 40, atk: [4, 10], def: 0, align: 'neutral', weird: false },
+      { name: '背单词的同学', hp: 40, atk: [2, 7], def: 0, align: 'kind', weird: false }
     ],
     hall: [
-      { name: '值周生', hp: 60, atk: [3, 8], def: 0, align: 'neutral', weird: false },
-      { name: '赶路的同学', hp: 60, atk: [2, 6], def: 0, align: 'kind', weird: false },
-      { name: '巡视的老师', hp: 60, atk: [6, 15], def: 0, align: 'neutral', weird: false },
-      { name: '拖堂的老师', hp: 75, atk: [8, 15], def: 0, align: 'neutral', weird: false }
+      { name: '值周生', hp: 40, atk: [3, 8], def: 0, align: 'neutral', weird: false },
+      { name: '赶路的同学', hp: 40, atk: [2, 6], def: 0, align: 'kind', weird: false },
+      { name: '巡视的老师', hp: 40, atk: [6, 15], def: 0, align: 'neutral', weird: false },
+      { name: '拖堂的老师', hp: 50, atk: [8, 15], def: 0, align: 'neutral', weird: false }
     ],
     weird: [
-      { name: '倒着走的同学', hp: 60, atk: [5, 12], def: 0, align: 'evil', weird: true },
-      { name: '没有影子的老师', hp: 75, atk: [8, 15], def: 0, align: 'evil', weird: true },
-      { name: '微笑着的学生', hp: 60, atk: [4, 9], def: 0, align: 'kind', weird: true },
-      { name: '反复擦黑板的同学', hp: 60, atk: [3, 7], def: 0, align: 'neutral', weird: true }
+      { name: '倒着走的同学', hp: 40, atk: [5, 12], def: 0, align: 'evil', weird: true },
+      { name: '没有影子的老师', hp: 50, atk: [8, 15], def: 0, align: 'evil', weird: true },
+      { name: '微笑着的学生', hp: 40, atk: [4, 9], def: 0, align: 'kind', weird: true },
+      { name: '反复擦黑板的同学', hp: 40, atk: [3, 7], def: 0, align: 'neutral', weird: true }
     ],
-    zhang: { name: '张云祥老师', hp: 150, atk: 18, def: 0, align: 'neutral', weird: false }
+    zhang: { name: '张云祥老师', hp: 120, atk: 18, def: 0, align: 'neutral', weird: false }
   },
 
   /* ---------- 物品 ---------- */
@@ -449,5 +448,25 @@ CFG.CHANGELOG = [
   { v: 'v0.3.1', t: '2026-11-15 00:45', c: '右下角连廊改通横段楼最左节点;8字右侧五个节点各通一个操场点位(右上/右下角除外)' },
   { v: 'v0.3.2', t: '2026-11-15 01:00', c: '方向键走廊优先(右侧各门需按"右"通过);修复走廊误显示教室背景;师生血量下调·防御归零·随机0-3级(邪恶更高级);主页新增更新日志' },
   { v: 'v0.3.3', t: '2026-11-15 01:20', c: '地图左侧新增「周边生物」:剧情人物(张云祥/值周生)出现后留在原地,可查看身份等级并决定是否攻击,离开当前点位后才消失;战斗逃跑后对方也会留在周边' },
+  { v: 'v0.3.5', t: '2026-11-15 02:05', c: 'UI:左上角无底色小字属性(名称等级/经验条/身份/属性/状态,状态显示剩余时间);休息冥想改3秒且可中止;生物剧情升级(多段+选项);张云祥合并为一人;生物血量再下调' },
   { v: 'v0.3.4', t: '2026-11-15 01:45', c: 'UI精修:玻璃质感半透明面板、字号与间距统一;地图位点改方格、走廊连线改淡虚线;8字楼右侧的门只能通往操场左侧;普通生物也会触发剧情,战斗面板上方显示血量属性、右侧攻击/逃离(剧情结束后才出现逃离);属性栏移到左上角,状态显示在其下方;右上按钮顺序:地图/行为/背包/周边生物/设置' }
 ];
+
+/* ---------- 普通生物遭遇剧情(更丰富) ---------- */
+CFG.ENCOUNTER_STORIES = {
+  kind: [
+    { lines: ['你遇到了「{name}」。', '它站在走廊的灯下,看到你之后先是一愣,然后冲你点了点头。', '「这么晚还没走?」它小声问,把手里的东西往身后藏了藏。'], choices: [{ t: '“你呢?这么晚在做什么?”', fx: { san: -2 }, reply: '它笑了笑,没有回答,只是说:「快回家吧。」' }, { t: '点头,继续走', fx: {}, reply: '它让开了半步,看着你走过去。' }] },
+    { lines: ['「{name}」在你前面慢慢走着,听见脚步回过头。', '它犹豫了一下,把手里的半块面包递过来。', '「吃吗?我晚上没吃完。」'], choices: [{ t: '接过来吃了', fx: { hp: 5, san: 2 }, reply: '面包是甜的,你突然觉得没那么冷了。' }, { t: '摆摆手说不用', fx: { san: -1 }, reply: '它把面包收回去,小声说:「那你路上小心。」' }] }
+  ],
+  neutral: [
+    { lines: ['你迎面撞上了「{name}」。', '它上下打量了你一眼,往旁边让了半步,却又停住。', '「你这么晚在楼里晃什么?」', '它的语气听不出是在关心还是质疑。'], choices: [{ t: '如实说想离开学校', fx: { san: -3 }, reply: '「离开?」它重复了一遍,眼神变得奇怪,「你确定你还走得出去吗?」' }, { t: '说在找东西', fx: {}, reply: '它盯着你看了几秒,让开了路。' }] },
+    { lines: ['「{name}」靠在墙边,像是在等谁。', '看到你靠近,它直起身子,挡住了半条走廊。', '「借过。」你说。它没有动。'], choices: [{ t: '从它身边挤过去', fx: { sp: -3 }, reply: '擦肩而过的一瞬间,你感觉它的手很凉。' }, { t: '问它能不能让一下', fx: { san: -2 }, reply: '它慢慢退开,嘴里嘟囔着你听不清的话。' }] }
+  ],
+  evil: [
+    { lines: ['那个人影没有影子。', '「{name}」缓缓转向你,脖子扭动的幅度大得不正常。', '它的嘴一张一合,却没有发出声音。', '空气冷了下来,你听见自己心跳的声音。'], choices: [{ t: '后退一步', fx: { san: -4 }, reply: '它没有追上来,只是歪着头,目送你离开。' }, { t: '大喊“你是谁!”', fx: { san: -6, sp: -2 }, reply: '它突然停住动作,整条走廊的灯“啪”地灭了一盏。' }] },
+    { lines: ['走廊尽头的灯又闪了一下。', '「{name}」就站在灯的下面,可每一次灯亮,它都离你更近一点。', '最后一次闪灭之后,它已经贴到了你面前。'], choices: [{ t: '屏住呼吸不动', fx: { san: -5 }, reply: '过了很久,它才慢慢离开,留下一股腐烂的味道。' }, { t: '撞开它就跑', fx: { sp: -8, san: -3 }, reply: '你冲出好几米才敢回头——它已经不见了。' }] }
+  ],
+  weird: [
+    { lines: ['不太对劲。', '「{name}」背对着你,可它的后脑勺上,好像长着一张脸。', '你一动,它也动了——但慢了半拍。', '墙壁上的影子比它多了一个。'], choices: [{ t: '盯着它看', fx: { san: -7 }, reply: '你确定自己看见那张脸对你笑了一下。' }, { t: '闭上眼睛走过去', fx: { san: -4, sp: -3 }, reply: '你再睁开眼时,走廊上只剩下你一个人。' }] }
+  ]
+};

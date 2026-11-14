@@ -142,15 +142,16 @@
       </div>
       <div class="exp-row">
         <div class="exp-bar"><div class="exp-fill" id="exp-fill" style="width:0%"></div></div>
-        <span class="exp-num" id="exp-num">0 / 5</span>
+        <span class="exp-num" id="exp-num">0/5</span>
       </div>
-      <div class="hud-cls" id="hud-cls">—</div>
-      <div class="hud-loc" id="hud-loc">—</div>
+      <div class="hud-id" id="hud-id">身份:—</div>
+      <div class="hud-sub">属性</div>
       <div class="stat-row"><span class="stat-name">血量</span><div class="stat-bar"><div class="stat-fill" id="hp-fill" style="width:100%"></div></div><span class="stat-num" id="hp-num">100/100</span></div>
       <div class="stat-row"><span class="stat-name">精力</span><div class="stat-bar"><div class="stat-fill" id="sp-fill" style="width:100%"></div></div><span class="stat-num" id="sp-num">100/100</span></div>
       <div class="stat-row"><span class="stat-name">SAN</span><div class="stat-bar"><div class="stat-fill" id="san-fill" style="width:100%"></div></div><span class="stat-num" id="san-num">100/100</span></div>
-      <div class="stat-pop" id="stat-pop"></div>
+      <div class="hud-sub">状态</div>
       <div class="status-col" id="status-col"></div>
+      <div class="stat-pop" id="stat-pop"></div>
     </div>
     <button class="icon-btn tr" id="btn-map">🗺️ 地图</button>
     <button class="icon-btn tr2" id="btn-act">⚡ 行为</button>
@@ -316,7 +317,10 @@
     <div class="sheet">
       <div class="sheet-title" id="busy-label">休息中…</div>
       <div class="stat-bar busy-bar"><div class="stat-fill" id="busy-bar" style="width:0%"></div></div>
-      <div class="contact-tip">还剩 <span id="busy-left">5.0s</span>,期间不能移动</div>
+      <div class="contact-tip">还剩 <span id="busy-left">3.0s</span>,期间不能移动</div>
+      <div class="gm-btns">
+        <button class="pill" id="busy-cancel">中止</button>
+      </div>
     </div>
   </div>
 
