@@ -1322,18 +1322,21 @@ function clearNearby() {
 function updateCbBtn() {
   const b = $('btn-cb');
   if (!b) return;
-  const has = !!(G && G.nearby);
-  b.classList.toggle('hidden', !has);
+  b.classList.remove('hidden');   // 周边生物按钮常驻显示
 }
 function openCb() {
-  if (!G || !G.nearby) { toast('这附近已经没有人了'); return; }
+  if (!G) return;
   renderCb();
   $('cb-box').classList.remove('hidden');
   AudioMgr.sfx('open');
 }
 function renderCb() {
   const box = $('cb-list');
-  if (!box || !G || !G.nearby) return;
+  if (!box || !G) return;
+  if (!G.nearby) {
+    box.innerHTML = '<div class="contact-tip">这附近没有别人。换个地方转转,也许会遇到谁。</div>';
+    return;
+  }
   const e = G.nearby;
   const an = e.align === 'evil' ? '邪恶' : (e.align === 'kind' ? '善良' : '中立');
   box.innerHTML = '<div class="foe-head">' +
