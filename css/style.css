@@ -780,3 +780,15 @@ body.light .map-class-panel { background: rgba(255, 255, 255, 0.97); }
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
 }
+
+/* ---------- 更新日志 ---------- */
+.tl2 { top: 14px; left: 108px; }
+.changelog-list { max-height: 56vh; overflow-y: auto; }
+.log-row {
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--line);
+}
+.log-head { display: flex; justify-content: space-between; align-items: baseline; }
+.log-head b { color: var(--accent); font-size: 15px; }
+.log-time { font-size: 11px; color: var(--dim); }
+.log-text { font-size: 13px; line-height: 1.7; color: var(--text); margin-top: 4px; }

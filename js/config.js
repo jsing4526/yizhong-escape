@@ -147,28 +147,28 @@ const CFG = {
     { atk: 100, def: 65, color: '#ff2d55' }
   ],
 
-  /* ---------- 遭遇生物 ---------- */
+  /* ---------- 遭遇生物(血量下调,防御统一为 0,等级 0-3,邪恶更高) ---------- */
   ENEMIES: {
     play: [
-      { name: '跑步的同学', hp: 100, atk: [3, 8], def: [1, 4], align: 'neutral', weird: false },
-      { name: '踢球的同学', hp: 100, atk: [5, 12], def: [2, 6], align: 'neutral', weird: false },
-      { name: '看台上的同学', hp: 125, atk: [2, 6], def: [0, 3], align: 'kind', weird: false },
-      { name: '打雪仗的同学', hp: 100, atk: [4, 10], def: [1, 5], align: 'neutral', weird: false },
-      { name: '背单词的同学', hp: 100, atk: [2, 7], def: [0, 2], align: 'kind', weird: false }
+      { name: '跑步的同学', hp: 60, atk: [3, 8], def: 0, align: 'neutral', weird: false },
+      { name: '踢球的同学', hp: 60, atk: [5, 12], def: 0, align: 'neutral', weird: false },
+      { name: '看台上的同学', hp: 75, atk: [2, 6], def: 0, align: 'kind', weird: false },
+      { name: '打雪仗的同学', hp: 60, atk: [4, 10], def: 0, align: 'neutral', weird: false },
+      { name: '背单词的同学', hp: 60, atk: [2, 7], def: 0, align: 'kind', weird: false }
     ],
     hall: [
-      { name: '值周生', hp: 100, atk: [3, 8], def: [1, 4], align: 'neutral', weird: false },
-      { name: '赶路的同学', hp: 100, atk: [2, 6], def: [0, 3], align: 'kind', weird: false },
-      { name: '巡视的老师', hp: 100, atk: [6, 15], def: [2, 8], align: 'neutral', weird: false },
-      { name: '拖堂的老师', hp: 125, atk: [8, 15], def: [3, 8], align: 'neutral', weird: false }
+      { name: '值周生', hp: 60, atk: [3, 8], def: 0, align: 'neutral', weird: false },
+      { name: '赶路的同学', hp: 60, atk: [2, 6], def: 0, align: 'kind', weird: false },
+      { name: '巡视的老师', hp: 60, atk: [6, 15], def: 0, align: 'neutral', weird: false },
+      { name: '拖堂的老师', hp: 75, atk: [8, 15], def: 0, align: 'neutral', weird: false }
     ],
     weird: [
-      { name: '倒着走的同学', hp: 100, atk: [5, 12], def: [2, 6], align: 'evil', weird: true },
-      { name: '没有影子的老师', hp: 125, atk: [8, 15], def: [4, 8], align: 'evil', weird: true },
-      { name: '微笑着的学生', hp: 100, atk: [4, 9], def: [1, 5], align: 'kind', weird: true },
-      { name: '反复擦黑板的同学', hp: 100, atk: [3, 7], def: [0, 4], align: 'neutral', weird: true }
+      { name: '倒着走的同学', hp: 60, atk: [5, 12], def: 0, align: 'evil', weird: true },
+      { name: '没有影子的老师', hp: 75, atk: [8, 15], def: 0, align: 'evil', weird: true },
+      { name: '微笑着的学生', hp: 60, atk: [4, 9], def: 0, align: 'kind', weird: true },
+      { name: '反复擦黑板的同学', hp: 60, atk: [3, 7], def: 0, align: 'neutral', weird: true }
     ],
-    zhang: { name: '张云祥老师', hp: 150, atk: 18, def: 9, align: 'neutral', weird: false }
+    zhang: { name: '张云祥老师', hp: 150, atk: 18, def: 0, align: 'neutral', weird: false }
   },
 
   /* ---------- 物品 ---------- */
@@ -438,3 +438,14 @@ function mkClasses(grade, dept, from, to) {
   for (let i = from; i <= to; i++) arr.push(grade + dept + i);
   return arr;
 }
+
+/* ---------- 更新日志 ---------- */
+CFG.CHANGELOG = [
+  { v: 'v0.1', t: '2026-11-14 16:30', c: '初版:主页/角色卡/8字楼·横段楼地图/存档/设置/合成音乐/对话系统' },
+  { v: 'v0.2', t: '2026-11-14 18:40', c: '换成真实照片;地图改为楼内+全景双视图;教室剧情;游戏时钟(1:12);纯音乐;科技感UI' },
+  { v: 'v0.2.1', t: '2026-11-14 23:20', c: '操场可进入;横段楼专属走廊/楼梯图;行为面板(休息冥想);连廊修正;清理无用文件' },
+  { v: 'v0.2.2', t: '2026-11-15 00:10', c: '连廊直连横段楼;操场九宫格(上两排/下排不同图);方向键移动' },
+  { v: 'v0.3', t: '2026-11-15 00:30', c: '战斗系统:攻击/防御/等级1-10/经验条;背包与掉落(药剂/试卷/笔/烧饼);烧饼buff;SAN混乱状态与上限;诡化与"迷失"结局;新剧情(王阿姨/小林)' },
+  { v: 'v0.3.1', t: '2026-11-15 00:45', c: '右下角连廊改通横段楼最左节点;8字右侧五个节点各通一个操场点位(右上/右下角除外)' },
+  { v: 'v0.3.2', t: '2026-11-15 01:00', c: '方向键走廊优先(右侧各门需按"右"通过);修复走廊误显示教室背景;师生血量下调·防御归零·随机0-3级(邪恶更高级);主页新增更新日志' }
+];

@@ -185,7 +185,7 @@ function locInfo(floor, nodeId) {
   if (G && G.classMap) {
     const own = G.classMap[G.cls];
     if (own && own.floor === floor && Math.hypot(nd.x - own.x, nd.y - own.y) < 46) {
-      return { type: 'classroom', name: G.cls + '班 门口' };
+      return { type: 'corridor', name: G.cls + '班 门口' };
     }
     const nr = nearRoom(floor, nodeId);
     if (nr) return { type: 'corridor', name: (nr.cls ? nr.cls + '班' : '空教室') + ' 前' };
@@ -692,24 +692,49 @@ function renderClassPanel(f, occ) {
 }
 
 /* ---------- 方向按钮移动 ---------- */
+/* 节点所属建筑组:eight / hbld / pg / gate / other */
+function groupOf(nodeId) {
+  if (nodeId === 'GATE') return 'gate';
+  let i;
+  for (i = 0; i < CFG.eightNodes.length; i++) if (CFG.eightNodes[i].id === nodeId) return 'eight';
+  for (i = 0; i < CFG.hNodes.length; i++) if (CFG.hNodes[i].id === nodeId) return 'hbld';
+  for (i = 0; i < CFG.pgGrid.length; i++) if (CFG.pgGrid[i].id === nodeId) return 'pg';
+  return 'other';
+}
 function dirCand(dxDir, dyDir) {
   const nbs = neighborsOf(G.floor, G.nodeId).filter(function (n) { return n.floor === G.floor; });
   const nd = nodeXY(G.floor, G.nodeId);
-  let best = null, bestVal = 0;
-  for (let i = 0; i < nbs.length; i++) {
-    const p = nodeXY(G.floor, nbs[i].id);
-    if (!p) continue;
-    const dx = p.x - nd.x, dy = p.y - nd.y;
-    let ok = false;
-    if (dxDir < 0 && dx < -8 && Math.abs(dx) > Math.abs(dy)) ok = true;
-    else if (dxDir > 0 && dx > 8 && Math.abs(dx) > Math.abs(dy)) ok = true;
-    else if (dyDir < 0 && dy < -8 && Math.abs(dy) >= Math.abs(dx)) ok = true;
-    else if (dyDir > 0 && dy > 8 && Math.abs(dy) >= Math.abs(dx)) ok = true;
-    if (!ok) continue;
-    const val = dxDir !== 0 ? Math.abs(dx) : Math.abs(dy);
-    if (val > bestVal) { bestVal = val; best = nbs[i]; }
+  const curGroup = groupOf(G.nodeId);
+  /* 优先走同一栋楼内的走廊,没有同楼方向的邻居时才走"侧门"(操场入口等) */
+  const passes = [true, false];
+  for (let pass = 0; pass < passes.length; pass++) {
+    const sameOnly = passes[pass];
+    let best = null, bestVal = 0;
+    for (let i = 0; i < nbs.length; i++) {
+      if (sameOnly && groupOf(nbs[i].id) !== curGroup) continue;
+      const p = nodeXY(G.floor, nbs[i].id);
+      if (!p) continue;
+      const dx = p.x - nd.x, dy = p.y - nd.y;
+      let ok = false;
+      if (sameOnly) {
+        if (dxDir < 0 && dx < -8 && Math.abs(dx) > Math.abs(dy)) ok = true;
+        else if (dxDir > 0 && dx > 8 && Math.abs(dx) > Math.abs(dy)) ok = true;
+        else if (dyDir < 0 && dy < -8 && Math.abs(dy) >= Math.abs(dx)) ok = true;
+        else if (dyDir > 0 && dy > 8 && Math.abs(dy) >= Math.abs(dx)) ok = true;
+      } else {
+        /* 侧门方向放宽:只要大致朝向该方向即可(右侧各门) */
+        if (dxDir < 0 && dx < -8) ok = true;
+        else if (dxDir > 0 && dx > 8) ok = true;
+        else if (dyDir < 0 && dy < -8) ok = true;
+        else if (dyDir > 0 && dy > 8) ok = true;
+      }
+      if (!ok) continue;
+      const val = dxDir !== 0 ? Math.abs(dx) : Math.abs(dy);
+      if (val > bestVal) { bestVal = val; best = nbs[i]; }
+    }
+    if (best) return best;
   }
-  return best;
+  return null;
 }
 /* ---------- 行为面板(休息/冥想,30s冷却) ---------- */
 function cdLeft(key) {
@@ -852,9 +877,17 @@ function useItem(kind) {
 let F = null;
 function rollEnemy(base) {
   const e = clone(base);
-  e.maxHp = e.hp;
-  e.atk = Array.isArray(base.atk) ? base.atk[0] + Math.floor(Math.random() * (base.atk[1] - base.atk[0] + 1)) : base.atk;
-  e.def = Array.isArray(base.def) ? base.def[0] + Math.floor(Math.random() * (base.def[1] - base.def[0] + 1)) : base.def;
+  /* 等级:普通 0-3,邪恶 2-3;防御统一 0;血量随之小幅提升 */
+  e.lv = base.align === 'evil' ? (2 + Math.floor(Math.random() * 2)) : Math.floor(Math.random() * 4);
+  e.maxHp = base.hp + e.lv * 6;
+  e.hp = e.maxHp;
+  if (Array.isArray(base.atk)) {
+    const a0 = base.atk[0], a1 = base.atk[1];
+    e.atk = Math.min(15, a0 + Math.floor(Math.random() * (a1 - a0 + 1)) + e.lv);
+  } else {
+    e.atk = base.atk;
+  }
+  e.def = 0;
   return e;
 }
 function startBattle(e) {
@@ -881,7 +914,7 @@ function renderFoe() {
   if (!F) return;
   const an = F.align === 'evil' ? '邪恶' : (F.align === 'kind' ? '善良' : '中立');
   $('foe-name').textContent = F.name;
-  $('foe-tag').textContent = (F.weird ? '诡异 · ' : '') + an + ' · 攻' + F.atk + ' 防' + F.def;
+  $('foe-tag').textContent = 'Lv.' + F.lv + ' · ' + (F.weird ? '诡异 · ' : '') + an + ' · 攻' + F.atk + ' 防' + F.def;
   $('foe-hp').style.width = Math.max(0, F.hp / F.maxHp * 100) + '%';
   $('foe-hp-num').textContent = Math.max(0, Math.round(F.hp)) + '/' + F.maxHp;
   $('foe-log').textContent = F.log;
@@ -1561,6 +1594,15 @@ function init() {
     syncSettingsUI($('scr-settings'));
     show('scr-settings');
   });
+  $('btn-changelog').addEventListener('click', function () {
+    AudioMgr.sfx('open');
+    renderChangelog();
+    $('changelog-box').classList.remove('hidden');
+  });
+  $('btn-changelog-close').addEventListener('click', function () {
+    AudioMgr.sfx('tap');
+    $('changelog-box').classList.add('hidden');
+  });
 
   /* 存档页 */
   $('btn-saves-back').addEventListener('click', function () { show('scr-home'); });
@@ -1749,3 +1791,18 @@ function init() {
 }
 
 window.addEventListener('DOMContentLoaded', init);
+
+/* ---------- 更新日志 ---------- */
+function renderChangelog() {
+  const box = $('changelog-list');
+  if (!box) return;
+  let html = '';
+  const list = CFG.CHANGELOG || [];
+  for (let i = list.length - 1; i >= 0; i--) {
+    html += '<div class="log-row">' +
+      '<div class="log-head"><b>' + list[i].v + '</b><span class="log-time">' + list[i].t + '</span></div>' +
+      '<div class="log-text">' + list[i].c + '</div>' +
+      '</div>';
+  }
+  box.innerHTML = html;
+}
