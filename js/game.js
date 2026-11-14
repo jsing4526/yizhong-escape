@@ -1234,7 +1234,7 @@ function applyFx(fx) {
   if (fx.san) G.san = clamp(G.san + fx.san, 0, 100);
   if (fx.flag) G.flags[fx.flag] = true;
   if (fx.next === 'win') G.won = true;
-  if (fx.pass) { G.flags.pass = true; toast('获得出门证 🎫'); }
+  if (fx.pass) { G.flags.pass = true; addItem('pass'); }
   if (fx.next === 'caught') {
     G.flags.rushed = true;
     G.floor = 1; G.nodeId = 'H330'; G.loc = 'corridor';

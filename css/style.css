@@ -959,3 +959,16 @@ body.light .hud {
 }
 .status-col { margin-top: 3px; gap: 4px; }
 .stat-pop { bottom: -22px; font-size: 11px; }
+
+/* ---------- 属性栏收窄,避免挡住楼层徽章 ---------- */
+.hud { max-width: 46%; }
+.hud-id {
+  font-size: 9px;
+  line-height: 1.5;
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-all;
+}
+.hud-name { font-size: 12px; }
+.exp-bar { max-width: 100%; }
+.game-floor { z-index: 6; }
