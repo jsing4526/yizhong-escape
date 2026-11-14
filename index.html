@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#070b12">
+<title>逃离遵化益众</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ================= 主页 ================= -->
+  <div id="scr-home" class="screen active">
+    <img class="bg-img" id="home-bg" src="assets/images/gate.jpg" alt="遵化益众中学">
+    <div class="bg-veil"></div>
+    <div class="scanline"></div>
+    <button class="icon-btn tl" id="btn-saves">📁 存档</button>
+    <button class="icon-btn tr" id="btn-settings">⚙️ 设置</button>
+    <div class="home-center">
+      <div class="game-logo">YIZHONG·ESCAPE</div>
+      <h1 class="game-title">逃离遵化益众</h1>
+      <p class="game-subtitle">—— 凌晨两点半,益众的铃声,又响了。</p>
+      <button class="btn-big" id="btn-start">开始游戏</button>
+    </div>
+    <div class="home-footer">
+      同人小游戏 v0.2 · 存档保存在本机浏览器 · 建议使用手机竖屏游玩<br>
+      <span class="disclaimer">所有图片来自网络,如有侵权,请联系作者</span><br>
+      <a class="contact-link" id="btn-contact">联系作者</a>
+    </div>
+  </div>
+
+  <!-- ================= 存档 ================= -->
+  <div id="scr-saves" class="screen panel-page">
+    <div class="panel-head">
+      <button class="btn-back" id="btn-saves-back">‹ 返回</button>
+      <div class="panel-title">📁 存档</div>
+    </div>
+    <div class="panel-body" id="saves-list"></div>
+  </div>
+
+  <!-- ================= 设置 ================= -->
+  <div id="scr-settings" class="screen panel-page">
+    <div class="panel-head">
+      <button class="btn-back" id="btn-set-back">‹ 返回</button>
+      <div class="panel-title">⚙️ 设置</div>
+    </div>
+    <div class="panel-body">
+      <div class="set-block">
+        <div class="set-label">纯音乐</div>
+        <div class="pill-row">
+          <label class="pill"><input type="radio" name="setm" value="none" data-music>关闭</label>
+          <label class="pill"><input type="radio" name="setm" value="morning" data-music>晨光钢琴</label>
+          <label class="pill"><input type="radio" name="setm" value="night" data-music>夜雾氛围</label>
+          <label class="pill"><input type="radio" name="setm" value="star" data-music>星夜电钢</label>
+        </div>
+      </div>
+      <div class="set-block">
+        <div class="set-label">音量</div>
+        <input type="range" min="0" max="100" step="1" data-vol value="70">
+      </div>
+      <div class="set-block">
+        <div class="set-label">界面模式</div>
+        <div class="pill-row">
+          <button class="pill" data-theme="dark">深色</button>
+          <button class="pill" data-theme="light">浅色</button>
+        </div>
+      </div>
+      <div class="set-block">
+        <div class="switch-row">
+          <span>音效</span>
+          <input type="checkbox" data-sfx checked>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 角色卡 ================= -->
+  <div id="scr-card" class="screen panel-page">
+    <div class="panel-head">
+      <button class="btn-back" id="btn-card-back">‹ 返回</button>
+      <div class="panel-title">📝 创建角色</div>
+    </div>
+    <div class="panel-body">
+      <div class="card-field">
+        <div class="card-label">姓名</div>
+        <input class="card-input" id="card-name" maxlength="8" placeholder="请输入你的名字(不填则为 无名同学)">
+      </div>
+      <div class="card-field">
+        <div class="card-label">年级</div>
+        <div class="pill-row" id="card-grade">
+          <button class="pill selected" data-grade="高一">高一</button>
+          <button class="pill" data-grade="高二">高二</button>
+          <button class="pill" data-grade="高三">高三</button>
+        </div>
+      </div>
+      <div class="card-field">
+        <div class="card-label">级部 <small>每个级部 18 个班</small></div>
+        <div class="pill-row" id="card-dept">
+          <button class="pill selected" data-dept="A部">A部</button>
+          <button class="pill" data-dept="B部">B部</button>
+        </div>
+      </div>
+      <div class="card-field">
+        <div class="card-label">班级</div>
+        <select class="card-input" id="card-num">
+          <option value="1">1班</option><option value="2">2班</option><option value="3">3班</option>
+          <option value="4">4班</option><option value="5">5班</option><option value="6">6班</option>
+          <option value="7">7班</option><option value="8">8班</option><option value="9">9班</option>
+          <option value="10">10班</option><option value="11">11班</option><option value="12">12班</option>
+          <option value="13">13班</option><option value="14">14班</option><option value="15">15班</option>
+          <option value="16">16班</option><option value="17">17班</option><option value="18">18班</option>
+        </select>
+      </div>
+      <div class="card-field">
+        <div class="card-label">阵营</div>
+        <div class="faction-row" id="card-faction">
+          <div class="faction selected" data-faction="student">学生<span class="lock"></span></div>
+          <div class="faction disabled" data-faction="teacher">老师<span class="lock">未开放</span></div>
+          <div class="faction disabled" data-faction="director">主任<span class="lock">未开放</span></div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-back" id="btn-card-back2">‹ 返回</button>
+        <button class="btn-big" id="btn-card-start">进入游戏</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 游戏 ================= -->
+  <div id="scr-game" class="screen">
+    <img class="bg-img" id="game-bg" src="assets/images/corridor.jpg" alt="">
+    <div class="bg-veil"></div>
+    <div class="clock" id="game-clock">2026.10.30 06:00</div>
+    <div class="game-floor" id="game-floor">1F</div>
+    <div class="hud">
+      <div class="hud-top">
+        <span class="hud-name" id="hud-name">—</span>
+        <span class="hud-form" id="hud-form">清醒</span>
+      </div>
+      <div class="hud-cls" id="hud-cls">—</div>
+      <div class="hud-loc" id="hud-loc">—</div>
+      <div class="stat-row"><span class="stat-name">血量</span><div class="stat-bar"><div class="stat-fill" id="hp-fill" style="width:100%"></div></div><span class="stat-num" id="hp-num">100</span></div>
+      <div class="stat-row"><span class="stat-name">精力</span><div class="stat-bar"><div class="stat-fill" id="sp-fill" style="width:100%"></div></div><span class="stat-num" id="sp-num">100</span></div>
+      <div class="stat-row"><span class="stat-name">SAN</span><div class="stat-bar"><div class="stat-fill" id="san-fill" style="width:100%"></div></div><span class="stat-num" id="san-num">100</span></div>
+    </div>
+    <button class="icon-btn tr" id="btn-map">🗺️ 地图</button>
+    <button class="icon-btn br" id="btn-menu">⚙️ 设置</button>
+  </div>
+
+  <!-- ================= 地图 ================= -->
+  <div id="scr-map" class="screen">
+    <div class="map-top">
+      <button class="btn-back" id="btn-map-back">‹ 返回</button>
+      <div class="map-floor" id="map-floor-big">1F</div>
+      <button class="btn-back" id="btn-map-view">🌐 全景</button>
+      <button class="btn-back" id="btn-map-classes">班级分布</button>
+    </div>
+    <div class="map-wrap">
+      <svg id="map-svg" viewBox="0 0 400 760" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <div class="map-pos" id="map-pos-name"></div>
+    <div class="map-actions">
+      <button class="map-act hidden" id="btn-stair-up">▲ 上楼</button>
+      <button class="map-act hidden" id="btn-stair-down">▼ 下楼</button>
+      <button class="map-act hidden" id="btn-enter-room">🚪 进入教室</button>
+      <button class="map-act danger hidden" id="btn-gate-act">冲出去!</button>
+    </div>
+    <div class="dpad">
+      <button class="dpad-btn" id="btn-d-up">▲</button>
+      <div class="dpad-mid">
+        <button class="dpad-btn" id="btn-d-left">◀</button>
+        <button class="dpad-btn" id="btn-d-right">▶</button>
+      </div>
+      <button class="dpad-btn" id="btn-d-down">▼</button>
+    </div>
+    <div class="map-legend">
+      <span><i class="lg-pl"></i>你</span>
+      <span><i class="lg-go"></i>可移动</span>
+      <span><i class="lg-st"></i>楼梯</span>
+      <span><i class="lg-ro"></i>不可达</span>
+      <span>★金边=你的教室</span>
+    </div>
+    <div class="map-class-panel hidden" id="map-class-panel"></div>
+  </div>
+
+  <!-- ================= 结局 ================= -->
+  <div id="scr-end" class="screen">
+    <div class="end-box">
+      <div class="end-title" id="end-title">—</div>
+      <div class="end-text" id="end-text">—</div>
+      <button class="btn-big" id="btn-end-home">返回主页</button>
+    </div>
+  </div>
+
+  <!-- ================= 对话(全局浮层,galgame 风格) ================= -->
+  <div class="dlg hidden" id="dlg">
+    <div class="dlg-portrait" id="dlg-portrait">
+      <img id="dlg-img" alt="" draggable="false">
+      <span class="dlg-icon" id="dlg-icon">?</span>
+    </div>
+    <div class="dlg-body">
+      <div class="dlg-name" id="dlg-name">—</div>
+      <div class="dlg-text" id="dlg-text">—</div>
+      <div class="dlg-choices" id="dlg-choices"></div>
+    </div>
+    <div class="dlg-hint">▸ 点击继续</div>
+  </div>
+
+  <!-- ================= 游戏内菜单 ================= -->
+  <div class="overlay hidden" id="gmenu">
+    <div class="sheet">
+      <div class="sheet-title">⚙️ 设置</div>
+      <div class="set-block">
+        <div class="set-label">纯音乐</div>
+        <div class="pill-row">
+          <label class="pill"><input type="radio" name="gmm" value="none" data-music>关闭</label>
+          <label class="pill"><input type="radio" name="gmm" value="morning" data-music>晨光钢琴</label>
+          <label class="pill"><input type="radio" name="gmm" value="night" data-music>夜雾氛围</label>
+          <label class="pill"><input type="radio" name="gmm" value="star" data-music>星夜电钢</label>
+        </div>
+      </div>
+      <div class="set-block">
+        <div class="set-label">音量</div>
+        <input type="range" min="0" max="100" step="1" data-vol value="70">
+      </div>
+      <div class="set-block">
+        <div class="set-label">界面模式</div>
+        <div class="pill-row">
+          <button class="pill" data-theme="dark">深色</button>
+          <button class="pill" data-theme="light">浅色</button>
+        </div>
+      </div>
+      <div class="set-block">
+        <div class="switch-row">
+          <span>音效</span>
+          <input type="checkbox" data-sfx checked>
+        </div>
+      </div>
+      <div class="gm-btns">
+        <button class="pill" id="btn-gm-rest">💤 原地休息</button>
+        <button class="pill" id="btn-gm-exit">🚪 退出游戏</button>
+        <button class="pill" id="btn-gm-close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 联系作者 ================= -->
+  <div class="overlay hidden" id="contact-box">
+    <div class="sheet">
+      <div class="sheet-title">📮 联系作者</div>
+      <div class="contact-line">QQ群:<b id="contact-qq">1132666296</b></div>
+      <div class="contact-tip">复制群号,在 QQ 里搜索群号即可加入</div>
+      <div class="gm-btns">
+        <button class="pill" id="btn-copy-qq">复制群号</button>
+        <button class="pill" id="btn-open-qq">打开QQ</button>
+        <button class="pill" id="btn-contact-close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 提示 ================= -->
+  <div class="toast" id="toast"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
