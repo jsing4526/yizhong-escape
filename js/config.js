@@ -65,7 +65,7 @@ const CFG = {
   ],
   hLinks: [['H250', 'H290'], ['H290', 'H330'], ['H330', 'H370'], ['H370', 'H385']],
   f1Links: [
-    ['L730', 'CONN'], ['CONN', 'H250'], ['GATE', 'H290'], ['GATE', 'H330'],
+    ['R730', 'CONN'], ['CONN', 'H250'], ['GATE', 'H290'], ['GATE', 'H330'],
     ['R525', 'PGENT'], ['PGENT', 'PGDN'], ['PGDN', 'PGUP']
   ],
 
@@ -236,6 +236,8 @@ const CFG = {
     classroomOther: 'assets/images/classroom.jpg',
     corridor: 'assets/images/corridor.jpg',
     stair: 'assets/images/stair.jpg',
+    hCorridor: 'assets/images/hbld-corridor.jpg',
+    hStair: 'assets/images/hbld-stair.jpg',
     gate: 'assets/images/gate.jpg',
     home: 'assets/images/gate.jpg',
     playgroundUp: 'assets/images/playground-up.jpg',

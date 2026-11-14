@@ -462,7 +462,7 @@ body.light .dlg-text { text-shadow: none; }
 .toast.show { opacity: 1; }
 
 /* ---------- 地图 ---------- */
-#scr-map { background: var(--bg2); }
+#scr-map { background: transparent; }
 .map-top {
   display: flex;
   align-items: center;
