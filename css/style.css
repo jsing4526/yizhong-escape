@@ -809,3 +809,116 @@ body.light .map-class-panel { background: rgba(255, 255, 255, 0.97); }
   box-shadow: 0 0 16px rgba(255, 217, 122, 0.4);
   cursor: pointer;
 }
+
+/* ---------- v0.3.4 属性栏/状态/按钮/方格地图 ---------- */
+.hud {
+  top: 8px;
+  left: 8px;
+  background: #0b1220 !important;   /* 纯色不透明,避免 WebView 渲染问题 */
+  border-color: rgba(63, 208, 245, 0.45);
+  backdrop-filter: none;
+}
+body.light .hud { background: #ffffff !important; }
+.hud .status-col {
+  position: static;
+  margin-top: 8px;
+  flex-direction: column;
+  gap: 5px;
+}
+.status-badge { font-size: 10px; padding: 4px 8px; }
+.tr4 { top: 170px; right: 12px; }
+.tr5 { top: 222px; right: 12px; }
+.foe-body {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 10px;
+}
+.foe-body .foe-pic {
+  flex: 0 0 84px;
+  height: 84px;
+  font-size: 40px;
+}
+.foe-actions {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.foe-actions .act-btn { margin-bottom: 0; padding: 12px; }
+.dlg { z-index: 96; }   /* 剧情对话浮在战斗面板之上 */
+
+/* ============ UI 精修:玻璃质感 + 更克制的排版 ============ */
+.hud {
+  background: rgba(9, 15, 26, 0.86);
+  border: 1px solid rgba(63, 208, 245, 0.26);
+  border-radius: 13px;
+  padding: 8px 11px 9px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+body.light .hud {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(14, 165, 214, 0.25);
+}
+.hud-name { font-size: 15px; }
+.hud-form { font-size: 11px; }
+.hud-lv { font-size: 11px; padding: 0 6px; }
+.hud-cls, .hud-loc { font-size: 10px; margin-top: 1px; }
+.hud-loc { color: rgba(126, 143, 165, 0.9); }
+.exp-row { margin-top: 4px; gap: 5px; }
+.exp-bar { height: 6px; }
+.exp-num { font-size: 9px; min-width: 40px; }
+.stat-row { margin-top: 5px; gap: 5px; }
+.stat-name { font-size: 10px; width: 30px; }
+.stat-num { font-size: 10px; width: 34px; }
+.stat-bar { height: 7px; }
+.status-badge {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  max-width: 40vw;
+}
+.icon-btn {
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(9, 15, 26, 0.62);
+  border: 1px solid rgba(63, 208, 245, 0.26);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.game-floor { font-size: 22px; min-width: 46px; padding: 2px 10px; border-radius: 11px; }
+.clock { font-size: 13px; }
+.map-floor { font-size: 28px; }
+.map-top .btn-back { font-size: 13px; padding: 7px 12px; }
+.map-legend { font-size: 10px; gap: 10px; padding: 6px 10px 8px; }
+.map-pos { font-size: 11px; }
+.dpad-btn { width: 48px; height: 36px; font-size: 15px; border-radius: 10px; }
+.map-act { font-size: 13px; padding: 9px 16px; }
+.dlg-text { font-size: 15px; line-height: 1.7; min-height: 48px; }
+.dlg-name { font-size: 12px; padding: 2px 10px; }
+.choice-btn { font-size: 13px; padding: 10px 13px; }
+.pill { font-size: 13px; padding: 7px 14px; }
+.set-block { padding: 12px; border-radius: 12px; margin-bottom: 10px; }
+.set-label { font-size: 12px; margin-bottom: 8px; }
+.sheet { border-radius: 18px 18px 0 0; padding: 16px 14px calc(16px + env(safe-area-inset-bottom)); }
+.sheet-title { font-size: 16px; margin-bottom: 12px; }
+.save-title { font-size: 14px; }
+.save-sub { font-size: 11px; margin-top: 3px; }
+.save-row { padding: 11px; border-radius: 12px; }
+.game-logo { font-size: 10px; letter-spacing: 5px; margin-bottom: 10px; }
+.game-title { font-size: 34px; letter-spacing: 4px; }
+.game-subtitle { font-size: 13px; margin-bottom: 36px; }
+.btn-big { padding: 13px 38px; font-size: 18px; letter-spacing: 6px; border-radius: 12px; }
+.home-footer { font-size: 10px; }
+.foe-name { font-size: 15px; }
+.foe-log { font-size: 13px; padding: 7px 9px; }
+.chip { font-size: 10px; padding: 3px 8px; }
+.cp-title { font-size: 11px; }
+.card-label { font-size: 13px; }
+.card-input { font-size: 15px; padding: 11px; }
+.faction { font-size: 14px; padding: 12px 0; }
+.contact-line { font-size: 15px; }
+.contact-tip { font-size: 11px; }

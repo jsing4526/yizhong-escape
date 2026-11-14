@@ -134,7 +134,6 @@
     <div class="bg-veil"></div>
     <div class="clock" id="game-clock">2026.10.30 06:00</div>
     <div class="game-floor" id="game-floor">1F</div>
-    <div class="status-col" id="status-col"></div>
     <div class="hud">
       <div class="hud-top">
         <span class="hud-name" id="hud-name">—</span>
@@ -151,11 +150,13 @@
       <div class="stat-row"><span class="stat-name">精力</span><div class="stat-bar"><div class="stat-fill" id="sp-fill" style="width:100%"></div></div><span class="stat-num" id="sp-num">100/100</span></div>
       <div class="stat-row"><span class="stat-name">SAN</span><div class="stat-bar"><div class="stat-fill" id="san-fill" style="width:100%"></div></div><span class="stat-num" id="san-num">100/100</span></div>
       <div class="stat-pop" id="stat-pop"></div>
+      <div class="status-col" id="status-col"></div>
     </div>
     <button class="icon-btn tr" id="btn-map">🗺️ 地图</button>
     <button class="icon-btn tr2" id="btn-act">⚡ 行为</button>
     <button class="icon-btn tr3" id="btn-bag">🎒 背包</button>
-    <button class="icon-btn tr4" id="btn-menu">⚙️ 设置</button>
+    <button class="icon-btn tr4 hidden" id="btn-cb">👥 周边生物</button>
+    <button class="icon-btn tr5" id="btn-menu">⚙️ 设置</button>
   </div>
 
   <!-- ================= 地图 ================= -->
@@ -194,7 +195,6 @@
       <span>★金边=你的教室</span>
     </div>
     <div class="map-class-panel hidden" id="map-class-panel"></div>
-    <button class="map-cb hidden" id="btn-cb">👥 周边生物</button>
   </div>
 
   <!-- ================= 结局 ================= -->
@@ -297,19 +297,17 @@
   <!-- ================= 战斗 ================= -->
   <div class="overlay hidden" id="foe-box">
     <div class="sheet">
-      <div class="foe-head">
+      <div class="foe-name" id="foe-name">?</div>
+      <div class="foe-tag" id="foe-tag"></div>
+      <div class="stat-row"><span class="stat-name">血量</span><div class="stat-bar"><div class="stat-fill foe-hp" id="foe-hp" style="width:100%"></div></div><span class="stat-num" id="foe-hp-num">100/100</span></div>
+      <div class="foe-body">
         <div class="foe-pic">?</div>
-        <div class="foe-info">
-          <div class="foe-name" id="foe-name">?</div>
-          <div class="foe-tag" id="foe-tag"></div>
-          <div class="stat-row"><span class="stat-name">血量</span><div class="stat-bar"><div class="stat-fill foe-hp" id="foe-hp" style="width:100%"></div></div><span class="stat-num" id="foe-hp-num">100/100</span></div>
+        <div class="foe-actions">
+          <button class="act-btn" id="btn-foe-attack">攻击</button>
+          <button class="act-btn hidden" id="btn-foe-flee">逃离</button>
         </div>
       </div>
       <div class="foe-log" id="foe-log"></div>
-      <div class="gm-btns">
-        <button class="pill" id="btn-foe-attack">攻击</button>
-        <button class="pill" id="btn-foe-flee">离开</button>
-      </div>
     </div>
   </div>
 

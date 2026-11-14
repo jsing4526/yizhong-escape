@@ -466,23 +466,26 @@ function drawNodes(g, f, nodeList, withStairNums) {
     }
     const ng = S('g', {}, g);
     if (nb) {
-      S('circle', { cx: n.x, cy: n.y, r: 15, fill: 'transparent', cursor: 'pointer' }, ng)
-        .addEventListener('click', (function (nid, nf) {
-          return function () { onNodeTap(nid, nf); };
-        })(n.id, f));
+      S('rect', {
+        x: n.x - 16, y: n.y - 16, width: 32, height: 32,
+        fill: 'transparent', cursor: 'pointer', 'data-nid': n.id
+      }, ng).addEventListener('click', (function (nid, nf) {
+        return function () { onNodeTap(nid, nf); };
+      })(n.id, f));
     }
+    /* 位点改为方格 */
     if (isCur) {
-      S('circle', { cx: n.x, cy: n.y, r: 7, fill: '#ffe066', stroke: '#fff', 'stroke-width': 1.5, class: 'pl-pulse' }, ng);
+      S('rect', { x: n.x - 8, y: n.y - 8, width: 16, height: 16, rx: 3, fill: '#ffe066', stroke: '#fff', 'stroke-width': 1.5, class: 'pl-pulse' }, ng);
     } else if (nb) {
-      S('circle', { cx: n.x, cy: n.y, r: 6, fill: '#57e07a', stroke: '#1a2c20', 'stroke-width': 1 }, ng);
+      S('rect', { x: n.x - 6, y: n.y - 6, width: 12, height: 12, rx: 2, fill: '#57e07a', stroke: '#1a2c20', 'stroke-width': 1 }, ng);
     } else {
-      S('circle', { cx: n.x, cy: n.y, r: 4, fill: '#4a5a6a', opacity: 0.8 }, ng);
+      S('rect', { x: n.x - 5, y: n.y - 5, width: 10, height: 10, rx: 2, fill: '#4a5a6a', opacity: 0.75 }, ng);
     }
     if (isStair && !isCur) {
-      S('circle', { cx: n.x, cy: n.y, r: 3, fill: '#1a2c33', opacity: 0.9 }, ng);
+      S('rect', { x: n.x - 2, y: n.y - 2, width: 4, height: 4, rx: 1, fill: '#1a2c33', opacity: 0.9 }, ng);
     }
     if (n.id === 'GATE') {
-      S('text', { x: n.x, y: n.y - 10, 'text-anchor': 'middle', fill: '#ffd97a', 'font-size': 8 }, ng).textContent = '大门';
+      S('text', { x: n.x, y: n.y - 12, 'text-anchor': 'middle', fill: '#ffd97a', 'font-size': 8 }, ng).textContent = '大门';
     }
   }
   if (withStairNums) {
@@ -503,18 +506,17 @@ function drawCorridors(g, f) {
     'M250 630 L383 630'
   ];
   for (let i = 0; i < segs.length; i++) {
-    S('path', { d: segs[i], stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85 }, g);
+    S('path', { d: segs[i], stroke: fc, 'stroke-width': 8, 'stroke-dasharray': '8 6', 'stroke-linecap': 'round', opacity: 0.55 }, g);
   }
   if (f === 1) {
     /* 连廊:8字右下角 → 横段楼最左节点 */
-    S('path', { d: 'M185 730 L250 630', stroke: fc, 'stroke-width': 7, 'stroke-linecap': 'round', opacity: 0.8, fill: 'none' }, g);
+    S('path', { d: 'M185 730 L250 630', stroke: fc, 'stroke-width': 7, 'stroke-dasharray': '7 6', 'stroke-linecap': 'round', opacity: 0.6, fill: 'none' }, g);
     /* 8字右侧各节点 → 操场不同点位(细线) */
     const pgLinks = [
-      'M185 380 L258 210', 'M185 440 L258 300', 'M185 525 L258 470',
-      'M185 600 L308 470', 'M185 660 L358 470'
+      'M185 380 L258 210', 'M185 440 L258 300', 'M185 525 L258 470'
     ];
     for (let i = 0; i < pgLinks.length; i++) {
-      S('path', { d: pgLinks[i], stroke: fc, 'stroke-width': 4, 'stroke-linecap': 'round', opacity: 0.45, fill: 'none' }, g);
+      S('path', { d: pgLinks[i], stroke: fc, 'stroke-width': 4, 'stroke-dasharray': '5 5', 'stroke-linecap': 'round', opacity: 0.5, fill: 'none' }, g);
     }
   }
 }
@@ -554,9 +556,9 @@ function drawAll(g, f) {
   }
 
   if (f === 1) {
-    S('path', { d: 'M185 525 L258 470', stroke: fc, 'stroke-width': 7, 'stroke-linecap': 'round', opacity: 0.8, fill: 'none' }, g);
+    S('path', { d: 'M185 525 L258 470', stroke: fc, 'stroke-width': 7, 'stroke-dasharray': '7 6', 'stroke-linecap': 'round', opacity: 0.6, fill: 'none' }, g);
     S('text', { x: 205, y: 508, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 7 }, g).textContent = '侧门';
-    S('path', { d: 'M308 470 L330 630', stroke: fc, 'stroke-width': 7, 'stroke-linecap': 'round', opacity: 0.8, fill: 'none' }, g);
+    S('path', { d: 'M308 470 L330 630', stroke: fc, 'stroke-width': 7, 'stroke-dasharray': '7 6', 'stroke-linecap': 'round', opacity: 0.6, fill: 'none' }, g);
     S('text', { x: 334, y: 555, 'text-anchor': 'start', fill: '#7ad7ff', 'font-size': 7 }, g).textContent = '横段楼入口';
   }
 
@@ -586,18 +588,15 @@ function drawBuilding(g, f, which) {
     S('text', { x: 120, y: 288, 'text-anchor': 'middle', fill: fc, 'font-size': 12 }, g).textContent = CFG.floorNames[f] + ' · ' + d.main.tag;
     const segs = ['M55 315 L55 730', 'M185 315 L185 730', 'M55 315 L185 315', 'M55 525 L185 525', 'M55 730 L185 730'];
     for (let i = 0; i < segs.length; i++) {
-      S('path', { d: segs[i], stroke: fc, 'stroke-width': 11, 'stroke-linecap': 'round', opacity: 0.9 }, g);
+      S('path', { d: segs[i], stroke: fc, 'stroke-width': 10, 'stroke-dasharray': '9 7', 'stroke-linecap': 'round', opacity: 0.6 }, g);
     }
     if (f === 1) {
       S('path', { d: 'M185 730 L240 645', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
       S('text', { x: 206, y: 660, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '连廊→横段楼';
       /* 右侧各节点 → 操场(短引出线) */
-      const stubs = [
-        ['M185 380 L240 252', 0], ['M185 440 L240 335', 0], ['M185 525 L240 484', 1],
-        ['M185 600 L240 542', 0], ['M185 660 L240 600', 0]
-      ];
+      const stubs = ['M185 380 L240 252', 'M185 440 L240 335', 'M185 525 L240 484'];
       for (let i = 0; i < stubs.length; i++) {
-        S('path', { d: stubs[i][0], stroke: fc, 'stroke-width': 6, 'stroke-linecap': 'round', opacity: 0.5, fill: 'none' }, g);
+        S('path', { d: stubs[i], stroke: fc, 'stroke-width': 6, 'stroke-dasharray': '6 5', 'stroke-linecap': 'round', opacity: 0.5, fill: 'none' }, g);
       }
       S('text', { x: 208, y: 510, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '操场侧门→';
     }
@@ -607,7 +606,7 @@ function drawBuilding(g, f, which) {
     S('path', { d: hbldPath(f === 1), fill: '#22303f', stroke: '#47617a', 'stroke-width': 3 }, g);
     S('text', { x: 310, y: 545, 'text-anchor': 'middle', fill: '#9db6cc', 'font-size': 18, 'font-weight': 'bold' }, g).textContent = '横段教学楼';
     S('text', { x: 310, y: 565, 'text-anchor': 'middle', fill: fc, 'font-size': 12 }, g).textContent = CFG.floorNames[f] + ' · ' + d.h.tag;
-    S('path', { d: 'M250 630 L383 630', stroke: fc, 'stroke-width': 13, 'stroke-linecap': 'round', opacity: 0.9 }, g);
+    S('path', { d: 'M250 630 L383 630', stroke: fc, 'stroke-width': 12, 'stroke-dasharray': '10 7', 'stroke-linecap': 'round', opacity: 0.6 }, g);
     if (f === 1) {
       S('path', { d: 'M250 630 L185 730', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
       S('text', { x: 236, y: 700, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '←连廊·8字楼';
@@ -632,7 +631,7 @@ function drawBuilding(g, f, which) {
     /* 网格连线 */
     for (let i = 0; i < CFG.pgLinks.length; i++) {
       const a = nodeXY(f, CFG.pgLinks[i][0]), b = nodeXY(f, CFG.pgLinks[i][1]);
-      if (a && b) S('path', { d: 'M' + a.x + ' ' + a.y + ' L' + b.x + ' ' + b.y, stroke: fc, 'stroke-width': 4, 'stroke-linecap': 'round', opacity: 0.5, fill: 'none' }, g);
+      if (a && b) S('path', { d: 'M' + a.x + ' ' + a.y + ' L' + b.x + ' ' + b.y, stroke: fc, 'stroke-width': 4, 'stroke-dasharray': '5 5', 'stroke-linecap': 'round', opacity: 0.45, fill: 'none' }, g);
     }
     S('text', { x: 308, y: 128, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 11 }, g).textContent = '上部(1-2排)';
     S('text', { x: 308, y: 448, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 11 }, g).textContent = '下部(3排)';
@@ -902,14 +901,31 @@ function startBattle(e) {
     G.san = Math.max(0, G.san - 5);
     toast('遇到诡异,失去 5 点 SAN');
   }
+  $('btn-foe-flee').classList.add('hidden');   // 剧情过完之前没有"逃离"
   $('foe-box').classList.remove('hidden');
   AudioMgr.sfx('event');
   renderFoe();
   updateHUD();
+  if (!e.storyDone) {
+    e.storyDone = true;
+    runEvent(encounterStory(e));               // 攻击与剧情同时触发
+  } else {
+    $('btn-foe-flee').classList.remove('hidden');
+  }
   if (e.align === 'evil') {
     // 邪恶生物先手攻击
-    setTimeout(function () { if (F) { foeHit(); renderFoe(); updateHUD(); } }, 600);
+    setTimeout(function () { if (F && !dlgBusy) { foeHit(); renderFoe(); updateHUD(); } }, 1200);
   }
+}
+
+/* 普通生物的遭遇剧情 */
+function encounterStory(e) {
+  const lines = [{ s: 'n', t: '你遇到了「' + e.name + '」。' }];
+  if (e.align === 'evil') lines.push({ s: 'n', t: '它的动作极不自然,眼睛没有焦点——你后背一阵发凉。' });
+  else if (e.align === 'kind') lines.push({ s: 'n', t: '它似乎没有恶意,只是安静地站在那里看你。' });
+  else lines.push({ s: 'n', t: '它打量着你,走廊里的空气一下子紧了。' });
+  if (e.weird) lines.push({ s: 'n', t: '灯光忽明忽暗,一阵说不出的不适涌上心头。' });
+  return { id: 'enc', lines: lines, choices: [{ t: '继续', fx: {} }] };
 }
 function renderFoe() {
   if (!F) return;
@@ -1362,6 +1378,7 @@ function runEvent(evt) {
       if (mapOpen) { renderMap(); }
       if (Math.random() < 0.2) { maybeEncounter('hall'); }
     }
+    if (F) $('btn-foe-flee').classList.remove('hidden');
     persist();
     checkEnd();
   }
