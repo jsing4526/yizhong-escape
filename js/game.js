@@ -134,10 +134,7 @@ function nodeXY(floor, id) {
   for (i = 0; i < CFG.eightNodes.length; i++) if (CFG.eightNodes[i].id === id) return CFG.eightNodes[i];
   for (i = 0; i < CFG.hNodes.length; i++) if (CFG.hNodes[i].id === id) return CFG.hNodes[i];
   if (id === 'GATE') return CFG.gateNode;
-  if (floor === 1 && id === 'CONN') return CFG.connNode;
-  if (id === 'PGENT') return CFG.pgEnt;
-  if (id === 'PGDN') return CFG.pgDown;
-  if (id === 'PGUP') return CFG.pgUp;
+  for (i = 0; i < CFG.pgGrid.length; i++) if (CFG.pgGrid[i].id === id) return CFG.pgGrid[i];
   return null;
 }
 
@@ -176,10 +173,13 @@ function occOf(floor) {
 /* 当前节点位置信息(自家班级门口 > 教室门口 > 楼梯 > 走廊) */
 function locInfo(floor, nodeId) {
   if (nodeId === 'GATE') return { type: 'gate', name: '大门口' };
-  if (floor === 1 && nodeId === 'CONN') return { type: 'corridor', name: '连廊' };
-  if (nodeId === 'PGUP') return { type: 'playground-up', name: '操场 · 上部' };
-  if (nodeId === 'PGDN') return { type: 'playground-down', name: '操场 · 下部' };
-  if (nodeId === 'PGENT') return { type: 'corridor', name: '操场入口' };
+  for (let i = 0; i < CFG.pgGrid.length; i++) {
+    if (CFG.pgGrid[i].id === nodeId) {
+      return CFG.pgGrid[i].up
+        ? { type: 'playground-up', name: '操场 · 上部' }
+        : { type: 'playground-down', name: '操场 · 下部' };
+    }
+  }
   const nd = nodeXY(floor, nodeId);
   if (!nd) return { type: 'corridor', name: '走廊' };
   if (G && G.classMap) {
@@ -207,7 +207,7 @@ function nearRoom(floor, nodeId) {
     }
   }
   let best = null, bd = 45;
-  const all = CFG.mainSlots().concat(CFG.hSlots());
+  const all = CFG.mainSlots().concat(floor >= 2 ? CFG.hSlots() : []);   // 横段楼 1F 无教室
   for (let i = 0; i < all.length; i++) {
     const sl = all[i];
     const d = Math.hypot(nd.x - sl.x, nd.y - sl.y);
@@ -223,7 +223,10 @@ function neighborsOf(floor, nodeId) {
   let i;
   for (i = 0; i < CFG.eightLinks.length; i++) pairs.push(CFG.eightLinks[i]);
   for (i = 0; i < CFG.hLinks.length; i++) pairs.push(CFG.hLinks[i]);
-  if (floor === 1) for (i = 0; i < CFG.f1Links.length; i++) pairs.push(CFG.f1Links[i]);
+  if (floor === 1) {
+    for (i = 0; i < CFG.f1Links.length; i++) pairs.push(CFG.f1Links[i]);
+    for (i = 0; i < CFG.pgLinks.length; i++) pairs.push(CFG.pgLinks[i]);
+  }
 
   for (i = 0; i < CFG.stairs.length; i++) {
     if (nodeId === CFG.stairs[i].id) {
@@ -282,7 +285,7 @@ function updateBg() {
   else if (G.loc === 'playground-up') src = CFG.bgs.playgroundUp;
   else if (G.loc === 'playground-down') src = CFG.bgs.playgroundDown;
   else if (isInEight(G.nodeId)) src = CFG.bgs.corridor;
-  else if (G.nodeId !== 'CONN') src = CFG.bgs.hCorridor;
+  else src = CFG.bgs.hCorridor;
   if (bg.getAttribute('src') !== src) bg.setAttribute('src', src);
   /* 地图背景与场景背景联动 */
   const mb = $('map-bg');
@@ -417,7 +420,7 @@ function drawCorridors(g, f) {
     S('path', { d: segs[i], stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85 }, g);
   }
   if (f === 1) {
-    S('path', { d: 'M185 730 L250 630', stroke: fc, 'stroke-width': 7, 'stroke-linecap': 'round', opacity: 0.8, fill: 'none' }, g);
+    S('path', { d: 'M185 730 L330 630', stroke: fc, 'stroke-width': 7, 'stroke-linecap': 'round', opacity: 0.8, fill: 'none' }, g);
   }
 }
 
@@ -452,25 +455,27 @@ function drawAll(g, f) {
     S('rect', { x: 312, y: 676, width: 10, height: 24, fill: '#0e1a2a', stroke: '#47617a', 'stroke-width': 1 }, g);
     S('rect', { x: 306, y: 700, width: 8, height: 34, fill: '#1a2c42' }, g);
     S('text', { x: 310, y: 746, 'text-anchor': 'middle', fill: '#ffd97a', 'font-size': 8 }, g).textContent = '大门口 → 校外';
-    S('text', { x: 219, y: 700, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 7 }, g).textContent = '连廊';
+    S('text', { x: 257, y: 700, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 7 }, g).textContent = '连廊';
   }
 
   if (f === 1) {
-    S('path', { d: 'M185 525 L226 510', stroke: fc, 'stroke-width': 7, 'stroke-linecap': 'round', opacity: 0.8, fill: 'none' }, g);
-    S('text', { x: 200, y: 504, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 7 }, g).textContent = '侧门';
+    S('path', { d: 'M185 525 L258 470', stroke: fc, 'stroke-width': 7, 'stroke-linecap': 'round', opacity: 0.8, fill: 'none' }, g);
+    S('text', { x: 205, y: 508, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 7 }, g).textContent = '侧门';
+    S('path', { d: 'M308 470 L330 630', stroke: fc, 'stroke-width': 7, 'stroke-linecap': 'round', opacity: 0.8, fill: 'none' }, g);
+    S('text', { x: 334, y: 555, 'text-anchor': 'start', fill: '#7ad7ff', 'font-size': 7 }, g).textContent = '横段楼入口';
   }
 
   drawCorridors(g, f);
   drawRooms(g, f, CFG.mainSlots().concat(CFG.hSlots()));
 
   const nodes = CFG.eightNodes.concat(CFG.hNodes);
-  if (f === 1) nodes.push(CFG.connNode, CFG.gateNode, CFG.pgEnt, CFG.pgDown, CFG.pgUp);
+  if (f === 1) nodes.push(CFG.gateNode);
+  for (let i = 0; i < CFG.pgGrid.length; i++) nodes.push(CFG.pgGrid[i]);
   drawNodes(g, f, nodes, true);
 
   if (f === 1) {
-    S('text', { x: 300, y: 428, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 8 }, g).textContent = '下点';
-    S('text', { x: 300, y: 268, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 8 }, g).textContent = '上点';
-    S('text', { x: 226, y: 500, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 7 }, g).textContent = '入口';
+    S('text', { x: 308, y: 134, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 8 }, g).textContent = '上部(1-2排)';
+    S('text', { x: 308, y: 432, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 8 }, g).textContent = '下部(3排)';
   }
 }
 
@@ -489,8 +494,8 @@ function drawBuilding(g, f, which) {
       S('path', { d: segs[i], stroke: fc, 'stroke-width': 11, 'stroke-linecap': 'round', opacity: 0.9 }, g);
     }
     if (f === 1) {
-      S('path', { d: 'M185 730 L250 630', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
-      S('text', { x: 200, y: 668, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '连廊→横段楼';
+      S('path', { d: 'M185 730 L240 665', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
+      S('text', { x: 206, y: 660, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '连廊→横段楼';
       S('path', { d: 'M185 525 L240 525', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
       S('text', { x: 208, y: 510, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '操场侧门→';
     }
@@ -502,8 +507,10 @@ function drawBuilding(g, f, which) {
     S('text', { x: 310, y: 565, 'text-anchor': 'middle', fill: fc, 'font-size': 12 }, g).textContent = CFG.floorNames[f] + ' · ' + d.h.tag;
     S('path', { d: 'M250 630 L383 630', stroke: fc, 'stroke-width': 13, 'stroke-linecap': 'round', opacity: 0.9 }, g);
     if (f === 1) {
-      S('path', { d: 'M250 630 L185 730', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
-      S('text', { x: 252, y: 664, 'text-anchor': 'start', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '←连廊·8字楼';
+      S('path', { d: 'M330 630 L185 730', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
+      S('text', { x: 240, y: 700, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '←连廊·8字楼';
+      S('path', { d: 'M308 470 L330 630', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
+      S('text', { x: 292, y: 540, 'text-anchor': 'end', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '操场入口↑';
       S('rect', { x: 298, y: 676, width: 10, height: 24, fill: '#0e1a2a', stroke: '#47617a', 'stroke-width': 1.2 }, g);
       S('rect', { x: 312, y: 676, width: 10, height: 24, fill: '#0e1a2a', stroke: '#47617a', 'stroke-width': 1.2 }, g);
       S('rect', { x: 306, y: 700, width: 8, height: 34, fill: '#1a2c42' }, g);
@@ -512,19 +519,26 @@ function drawBuilding(g, f, which) {
     S('text', { x: 383, y: 610, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 9 }, g).textContent = '楼梯';
     drawRooms(g, f, CFG.hSlots());
     const nodes = CFG.hNodes.slice();
-    if (f === 1) nodes.push(CFG.connNode, CFG.gateNode);
+    if (f === 1) nodes.push(CFG.gateNode);
     drawNodes(g, f, nodes, false);
   } else {
-    /* 操场(放大视图) */
+    /* 操场(放大视图,九宫格) */
     S('rect', { x: 226, y: 150, width: 164, height: 390, rx: 8, fill: '#16281f', stroke: '#35523f', 'stroke-width': 3 }, g);
     S('rect', { x: 252, y: 176, width: 112, height: 338, rx: 56, fill: 'none', stroke: '#3f5f4a', 'stroke-width': 3, 'stroke-dasharray': '8 5' }, g);
-    S('text', { x: 308, y: 195, 'text-anchor': 'middle', fill: '#9db6cc', 'font-size': 20, 'font-weight': 'bold' }, g).textContent = '操场';
-    S('text', { x: 308, y: 218, 'text-anchor': 'middle', fill: fc, 'font-size': 13 }, g).textContent = '1F · 两个活动点位';
-    S('path', { d: 'M226 510 L185 525', stroke: fc, 'stroke-width': 10, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
-    S('text', { x: 206, y: 502, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 11 }, g).textContent = '←8字楼侧门';
-    S('text', { x: 300, y: 428, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 10 }, g).textContent = '下点';
-    S('text', { x: 300, y: 266, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 10 }, g).textContent = '上点';
-    drawNodes(g, f, [CFG.pgEnt, CFG.pgDown, CFG.pgUp], false);
+    S('text', { x: 308, y: 192, 'text-anchor': 'middle', fill: '#9db6cc', 'font-size': 20, 'font-weight': 'bold' }, g).textContent = '操场';
+    S('text', { x: 308, y: 214, 'text-anchor': 'middle', fill: fc, 'font-size': 13 }, g).textContent = '1F · 九宫格活动点';
+    /* 网格连线 */
+    for (let i = 0; i < CFG.pgLinks.length; i++) {
+      const a = nodeXY(f, CFG.pgLinks[i][0]), b = nodeXY(f, CFG.pgLinks[i][1]);
+      if (a && b) S('path', { d: 'M' + a.x + ' ' + a.y + ' L' + b.x + ' ' + b.y, stroke: fc, 'stroke-width': 4, 'stroke-linecap': 'round', opacity: 0.5, fill: 'none' }, g);
+    }
+    S('text', { x: 308, y: 128, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 11 }, g).textContent = '上部(1-2排)';
+    S('text', { x: 308, y: 448, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 11 }, g).textContent = '下部(3排)';
+    S('path', { d: 'M185 525 L258 470', stroke: fc, 'stroke-width': 10, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
+    S('text', { x: 210, y: 508, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 11 }, g).textContent = '←8字楼侧门';
+    S('path', { d: 'M308 470 L330 630', stroke: fc, 'stroke-width': 10, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
+    S('text', { x: 330, y: 560, 'text-anchor': 'start', fill: '#7ad7ff', 'font-size': 11 }, g).textContent = '横段楼入口↓';
+    drawNodes(g, f, CFG.pgGrid, false);
   }
 }
 
@@ -595,6 +609,26 @@ function dirCand(dxDir, dyDir) {
   }
   return best;
 }
+/* ---------- 行为面板(休息/冥想,30s冷却) ---------- */
+function cdLeft(key) {
+  if (!G) return 0;
+  return Math.max(0, (G[key] || 0) - Date.now());
+}
+function syncActUI() {
+  const rest = cdLeft('cdRest'), med = cdLeft('cdMed');
+  const br = $('btn-act-rest'), bm = $('btn-act-med');
+  if (!br || !bm) return;
+  br.disabled = rest > 0;
+  bm.disabled = med > 0;
+  br.textContent = rest > 0 ? '休息 ' + Math.ceil(rest / 1000) + 's' : '休息 +10精力';
+  bm.textContent = med > 0 ? '冥想 ' + Math.ceil(med / 1000) + 's' : '冥想 +5SAN';
+}
+function openAct() {
+  syncActUI();
+  $('act-box').classList.remove('hidden');
+  AudioMgr.sfx('open');
+}
+
 function moveDir(dxDir, dyDir) {
   if (dlgBusy || !G || G.inRoom) return;
   const c = dirCand(dxDir, dyDir);
@@ -648,7 +682,7 @@ function onNodeTap(id, floor) {
 
 function moveTo(id, floor, via) {
   if (dlgBusy || G.inRoom) return;
-  if (G.sp <= 0) { toast('精力耗尽,走不动了。在设置里「休息」恢复精力'); return; }
+  if (G.sp <= 0) { toast('精力耗尽,走不动了。点右上角「行为」休息一下'); return; }
   const oldFloor = G.floor;
   G.sp = Math.max(0, G.sp - 2);
   G.floor = floor;
@@ -1058,6 +1092,7 @@ function init() {
     if (G && $('scr-game').classList.contains('active')) {
       $('game-clock').textContent = fmtGameTime(gameNow());
     }
+    if (!$('act-box').classList.contains('hidden')) syncActUI();
   }, 1000);
 
   /* 对话头像加载失败回退 */
@@ -1144,6 +1179,33 @@ function init() {
     show('scr-map');
   });
   $('btn-menu').addEventListener('click', openGmenu);
+  $('btn-act').addEventListener('click', openAct);
+
+  /* 行为面板 */
+  $('btn-act-close').addEventListener('click', function () {
+    AudioMgr.sfx('tap');
+    $('act-box').classList.add('hidden');
+  });
+  $('btn-act-rest').addEventListener('click', function () {
+    if (!G || cdLeft('cdRest') > 0) return;
+    AudioMgr.sfx('move');
+    const before = G.sp;
+    applyFx({ sp: 10 });
+    G.cdRest = Date.now() + 30000;
+    toast('休息:精力+' + (G.sp - before));
+    persist();
+    syncActUI();
+  });
+  $('btn-act-med').addEventListener('click', function () {
+    if (!G || cdLeft('cdMed') > 0) return;
+    AudioMgr.sfx('event');
+    const before = G.san;
+    applyFx({ san: 5 });
+    G.cdMed = Date.now() + 30000;
+    toast('冥想:SAN+' + (G.san - before));
+    persist();
+    syncActUI();
+  });
 
   /* 地图 */
   $('btn-map-back').addEventListener('click', function () {
@@ -1215,14 +1277,6 @@ function init() {
     });
   });
   gmBox.querySelector('input[data-sfx]').addEventListener('change', function () { saveSettingsFrom(gmBox); });
-  $('btn-gm-rest').addEventListener('click', function () {
-    if (!G) return;
-    AudioMgr.sfx('move');
-    applyFx({ sp: 30, san: -3 });
-    toast('你靠墙歇了一会儿:精力+30,SAN-3');
-    persist();
-    checkEnd();
-  });
   $('btn-gm-exit').addEventListener('click', function () {
     if (G) {
       persist();

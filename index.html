@@ -144,8 +144,9 @@
       <div class="stat-row"><span class="stat-name">精力</span><div class="stat-bar"><div class="stat-fill" id="sp-fill" style="width:100%"></div></div><span class="stat-num" id="sp-num">100</span></div>
       <div class="stat-row"><span class="stat-name">SAN</span><div class="stat-bar"><div class="stat-fill" id="san-fill" style="width:100%"></div></div><span class="stat-num" id="san-num">100</span></div>
     </div>
-    <button class="icon-btn br" id="btn-map">🗺️ 地图</button>
-    <button class="icon-btn tr" id="btn-menu">⚙️ 设置</button>
+    <button class="icon-btn tr" id="btn-map">🗺️ 地图</button>
+    <button class="icon-btn tr2" id="btn-act">⚡ 行为</button>
+    <button class="icon-btn tr3" id="btn-menu">⚙️ 设置</button>
   </div>
 
   <!-- ================= 地图 ================= -->
@@ -240,9 +241,23 @@
         </div>
       </div>
       <div class="gm-btns">
-        <button class="pill" id="btn-gm-rest">💤 原地休息</button>
         <button class="pill" id="btn-gm-exit">🚪 退出游戏</button>
         <button class="pill" id="btn-gm-close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 行为面板 ================= -->
+  <div class="overlay hidden" id="act-box">
+    <div class="sheet">
+      <div class="sheet-title">⚡ 行为</div>
+      <div class="set-block">
+        <button class="act-btn" id="btn-act-rest">休息 +10精力</button>
+        <button class="act-btn" id="btn-act-med">冥想 +5SAN</button>
+      </div>
+      <div class="contact-tip">两个行为各有 30 秒冷却</div>
+      <div class="gm-btns">
+        <button class="pill" id="btn-act-close">关闭</button>
       </div>
     </div>
   </div>
