@@ -125,8 +125,70 @@ const CFG = {
     d: { name: '张云祥·张老师', color: '#c9934f', icon: '🧑‍🏫', img: 'assets/images/portraits/zhangyunxiang.jpg' },
     g: { name: '门卫·老赵', color: '#6fae7f', icon: '🧢', img: 'assets/images/portraits/menwei.jpg' },
     z: { name: '值周生', color: '#c7a05a', icon: '🦺', img: 'assets/images/portraits/zhizhou.jpg' },
-    m: { name: '神秘同学', color: '#9c7fd0', icon: '👤', img: 'assets/images/portraits/shenmi.jpg' }
+    m: { name: '神秘同学', color: '#9c7fd0', icon: '👤', img: 'assets/images/portraits/shenmi.jpg' },
+    w: { name: '食堂·王阿姨', color: '#d0a05a', icon: '🍞', img: null },
+    l: { name: '学霸·小林', color: '#5aa0d0', icon: '🧑‍🎓', img: null }
   },
+
+  /* ---------- 等级与攻防 ---------- */
+  LEVELS: [
+    { atk: 1, def: 0, color: '#8b98a9' },
+    { atk: 3, def: 2, color: '#57e07a' },
+    { atk: 5, def: 5, color: '#3fd0f5' },
+    { atk: 10, def: 8, color: '#7c8cff' },
+    { atk: 20, def: 12, color: '#b39ddb' },
+    { atk: 30, def: 17, color: '#f0c05a' },
+    { atk: 40, def: 25, color: '#ff9a5a' },
+    { atk: 50, def: 35, color: '#ff7a7a' },
+    { atk: 70, def: 50, color: '#ff4d6d' },
+    { atk: 100, def: 65, color: '#ff2d55' }
+  ],
+
+  /* ---------- 遭遇生物 ---------- */
+  ENEMIES: {
+    play: [
+      { name: '跑步的同学', hp: 100, atk: [3, 8], def: [1, 4], align: 'neutral', weird: false },
+      { name: '踢球的同学', hp: 100, atk: [5, 12], def: [2, 6], align: 'neutral', weird: false },
+      { name: '看台上的同学', hp: 125, atk: [2, 6], def: [0, 3], align: 'kind', weird: false },
+      { name: '打雪仗的同学', hp: 100, atk: [4, 10], def: [1, 5], align: 'neutral', weird: false },
+      { name: '背单词的同学', hp: 100, atk: [2, 7], def: [0, 2], align: 'kind', weird: false }
+    ],
+    hall: [
+      { name: '值周生', hp: 100, atk: [3, 8], def: [1, 4], align: 'neutral', weird: false },
+      { name: '赶路的同学', hp: 100, atk: [2, 6], def: [0, 3], align: 'kind', weird: false },
+      { name: '巡视的老师', hp: 100, atk: [6, 15], def: [2, 8], align: 'neutral', weird: false },
+      { name: '拖堂的老师', hp: 125, atk: [8, 15], def: [3, 8], align: 'neutral', weird: false }
+    ],
+    weird: [
+      { name: '倒着走的同学', hp: 100, atk: [5, 12], def: [2, 6], align: 'evil', weird: true },
+      { name: '没有影子的老师', hp: 125, atk: [8, 15], def: [4, 8], align: 'evil', weird: true },
+      { name: '微笑着的学生', hp: 100, atk: [4, 9], def: [1, 5], align: 'kind', weird: true },
+      { name: '反复擦黑板的同学', hp: 100, atk: [3, 7], def: [0, 4], align: 'neutral', weird: true }
+    ],
+    zhang: { name: '张云祥老师', hp: 150, atk: 18, def: 9, align: 'neutral', weird: false }
+  },
+
+  /* ---------- 物品 ---------- */
+  ITEMS: {
+    energyPotion: { name: '精力药剂', icon: '🧪' },
+    hpPotion: { name: '血量药剂', icon: '❤️' },
+    paper: { name: '试卷', icon: '📄' },
+    pen: { name: '笔', icon: '🖊️' },
+    bing: { name: '食堂的烧饼', icon: '🍞' }
+  },
+
+  /* ---------- 诡化幻觉 ---------- */
+  GHOST_TEXTS: [
+    '有人在你身后轻声念着你的名字。',
+    '走廊的尽头站满了人影,却看不清脸。',
+    '墙上的时钟开始倒着走。',
+    '你听见下课铃,从很远很远的地方传来。',
+    '所有的门都在同一时刻打开了。',
+    '他们的眼睛,全都转向了你。',
+    '黑板上写满了你的名字。',
+    '你看见另一个自己,站在楼梯口。'
+  ],
+  GHOST_ENDING: '迷失:你精神紊乱在了益众之中,成了其中的一员',
 
   /* ---------- 剧情事件 ---------- */
   EVENTS: {
@@ -230,6 +292,30 @@ const CFG = {
               { p: 0.5, fx: { san: -2 }, reply: { s: 'n', t: '他半信半疑地让开了路。' } }
             ]
           }
+        ]
+      },
+      {
+        id: 'r7',
+        lines: [
+          { s: 'n', t: '食堂的灯还亮着。王阿姨从窗口探出头来。' },
+          { s: 'w', t: '哎哟,这么晚还没走?来,阿姨给你个烧饼,揣着,热乎。' },
+          { s: 'n', t: '她把一个还冒着热气的烧饼塞进你手里。' }
+        ],
+        choices: [
+          { t: '“谢谢阿姨!”', fx: { item: 'bing' }, reply: { s: 'w', t: '路上小心点。这楼晚上……不太平。' } },
+          { t: '“阿姨,您还没休息?”', fx: { item: 'bing', san: -2 }, reply: { s: 'w', t: '休息?这楼里的人都还没休息呢。' } }
+        ]
+      },
+      {
+        id: 'r8',
+        lines: [
+          { s: 'n', t: '走廊拐角,一个抱着资料的男生差点撞到你。' },
+          { s: 'l', t: '抱歉抱歉……你是那个还没走的同学吧?这个给你,我整理的错题。' },
+          { s: 'n', t: '小林把一张卷子塞进你手里,上面密密麻麻全是红笔批注。' }
+        ],
+        choices: [
+          { t: '收下卷子', fx: { item: 'paper' }, reply: { s: 'l', t: '看得懂就多看两眼,看不懂……就快跑吧。' } },
+          { t: '问他为什么还在', fx: { item: 'paper', san: -3 }, reply: { s: 'l', t: '我?我得把这张卷子送到它该去的地方。' } }
         ]
       }
     ]

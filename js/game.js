@@ -254,22 +254,108 @@ function calcForm() {
   return '濒临崩溃';
 }
 
-function barFill(kind, v) {
-  $(kind + '-fill').style.width = clamp(v, 0, 100) + '%';
-  $(kind + '-num').textContent = Math.round(v);
+function barFill(kind, v, max) {
+  const m = max || 100;
+  $(kind + '-fill').style.width = clamp(v / m * 100, 0, 100) + '%';
+  $(kind + '-num').textContent = Math.round(v) + '/' + m;
+}
+
+/* ---------- 等级 / 上限 / 状态 ---------- */
+function lvlData() {
+  return CFG.LEVELS[Math.min(9, Math.max(0, (G && G.lv ? G.lv : 1) - 1))];
+}
+function maxFromSan() {
+  if (!G) return { hp: 100, sp: 100 };
+  if (G.ghost) return { hp: 99999, sp: 99999 };
+  if (G.san >= 40) return { hp: 100, sp: 100 };
+  if (G.san >= 20) return { hp: 80, sp: 80 };
+  if (G.san >= 10) return { hp: 60, sp: 60 };
+  return { hp: 30, sp: 30 };
+}
+function clampStats() {
+  if (!G) return;
+  const m = maxFromSan();
+  G.hp = Math.min(G.hp, m.hp);
+  G.sp = Math.min(G.sp, m.sp);
+}
+function expNeed() { return 5 * (G.lv || 1); }
+function addExp(n) {
+  if (!G) return;
+  G.exp = (G.exp || 0) + n;
+  while (G.lv < 10 && G.exp >= expNeed()) {
+    G.exp -= expNeed();
+    G.lv++;
+    AudioMgr.sfx('win');
+    toast('升级!Lv.' + G.lv + ' 攻击 ' + lvlData().atk + ' 防御 ' + lvlData().def);
+  }
+  if (G.lv >= 10 && G.exp >= expNeed()) G.exp = expNeed() - 1;
+  updateHUD();
+}
+function statusList() {
+  const arr = [];
+  if (!G) return arr;
+  if (G.ghost) {
+    arr.push({ k: 'ghost', n: '诡化', d: '你的精神已经崩断。血量与精力暴涨至 99999,世界开始扭曲变形——你再也不是原来的自己了。' });
+    return arr;
+  }
+  if (G.san < 10) arr.push({ k: 's3', n: '精神极度混乱', d: '血量与精力上限降为 30。视野里全是重影,耳边全是杂音。' });
+  else if (G.san < 20) arr.push({ k: 's2', n: '精神中度混乱', d: '血量与精力上限降为 60。耳边总有窃窃私语,分不清是谁在说话。' });
+  else if (G.san < 40) arr.push({ k: 's1', n: '精神轻微混乱', d: '血量与精力上限降为 80。手脚发凉,总觉得身后有人。' });
+  if (G.buffUntil && G.buffUntil > Date.now()) arr.push({ k: 'bing', n: '烧饼效果', d: '每 7 秒回复 5 点血量与精力,持续两分钟。内心仍然不安。' });
+  return arr;
 }
 
 function updateHUD() {
   if (!G) return;
+  const lv = lvlData();
+  const max = maxFromSan();
   $('hud-name').textContent = G.name;
+  $('hud-lv').textContent = 'Lv.' + G.lv;
+  $('hud-lv').style.color = lv.color;
+  $('hud-lv').style.borderColor = lv.color;
+  $('exp-fill').style.width = Math.min(100, (G.exp || 0) / expNeed() * 100) + '%';
+  $('exp-num').textContent = (G.exp || 0) + ' / ' + expNeed();
   $('hud-form').textContent = G.form;
   $('hud-form').style.color = FORM_STYLE[G.form] || '#e6edf3';
-  $('hud-cls').textContent = G.cls + '班';
-  barFill('hp', G.hp); barFill('sp', G.sp); barFill('san', G.san);
+  $('hud-cls').textContent = G.cls + '班 · 攻' + lv.atk + ' 防' + lv.def;
+  barFill('hp', G.hp, max.hp); barFill('sp', G.sp, max.sp); barFill('san', G.san, 100);
   const info = locInfo(G.floor, G.nodeId);
   $('hud-loc').textContent = CFG.floorNames[G.floor] + ' · ' + info.name;
   $('game-floor').textContent = CFG.floorNames[G.floor];
   $('game-clock').textContent = fmtGameTime(gameNow());
+  renderStatuses();
+}
+
+/* 左侧状态列 */
+function renderStatuses() {
+  const col = $('status-col');
+  const list = statusList();
+  col.innerHTML = '';
+  for (let i = 0; i < list.length; i++) {
+    const b = document.createElement('div');
+    b.className = 'status-badge' + (list[i].k === 'ghost' ? ' ghost' : '');
+    b.textContent = list[i].n;
+    b.addEventListener('click', (function (st) {
+      return function () {
+        $('status-title').textContent = st.n;
+        $('status-desc').textContent = st.d;
+        $('status-box').classList.remove('hidden');
+        AudioMgr.sfx('tap');
+      };
+    })(list[i]));
+    col.appendChild(b);
+  }
+  if (!list.length) col.innerHTML = '';
+}
+
+/* 属性变化浮字(显示在属性下方) */
+let popTimer = null;
+function pop(text) {
+  const el = $('stat-pop');
+  el.textContent = text;
+  el.classList.add('show');
+  if (popTimer) clearTimeout(popTimer);
+  popTimer = setTimeout(function () { el.classList.remove('show'); }, 1800);
 }
 
 function updateBg() {
@@ -615,18 +701,312 @@ function cdLeft(key) {
   return Math.max(0, (G[key] || 0) - Date.now());
 }
 function syncActUI() {
+  const busy = busyLeft() > 0;
   const rest = cdLeft('cdRest'), med = cdLeft('cdMed');
   const br = $('btn-act-rest'), bm = $('btn-act-med');
   if (!br || !bm) return;
-  br.disabled = rest > 0;
-  bm.disabled = med > 0;
-  br.textContent = rest > 0 ? '休息 ' + Math.ceil(rest / 1000) + 's' : '休息 +10精力';
-  bm.textContent = med > 0 ? '冥想 ' + Math.ceil(med / 1000) + 's' : '冥想 +5SAN';
+  br.disabled = busy || rest > 0;
+  bm.disabled = busy || med > 0;
+  br.textContent = busy && G && G.busyKind === 'rest' ? '进行中…' : (rest > 0 ? '休息 ' + Math.ceil(rest / 1000) + 's' : '休息 +10精力');
+  bm.textContent = busy && G && G.busyKind === 'med' ? '进行中…' : (med > 0 ? '冥想 ' + Math.ceil(med / 1000) + 's' : '冥想 +5SAN');
 }
 function openAct() {
   syncActUI();
   $('act-box').classList.remove('hidden');
   AudioMgr.sfx('open');
+}
+
+/* ---------- 休息 / 冥想:5 秒读条 ---------- */
+let busyTimer = null;
+function busyLeft() {
+  return G ? Math.max(0, (G.busyUntil || 0) - Date.now()) : 0;
+}
+function busyKindName() {
+  return G && G.busyKind === 'med' ? '冥想' : '休息';
+}
+function busyTick() {
+  const total = 5000, left = busyLeft();
+  $('busy-bar').style.width = Math.min(100, (total - left) / total * 100) + '%';
+  $('busy-left').textContent = (Math.max(0, left) / 1000).toFixed(1) + 's';
+}
+function doAct(kind) {
+  if (!G) return;
+  if (F) { toast('先处理眼前的遭遇'); return; }
+  if (busyLeft() > 0) { toast('你正在' + busyKindName() + '中,不能动'); return; }
+  if (dlgBusy) return;
+  const cdKey = kind === 'rest' ? 'cdRest' : 'cdMed';
+  if (cdLeft(cdKey) > 0) return;
+  G.busyUntil = Date.now() + 5000;
+  G.busyKind = kind;
+  $('busy-label').textContent = kind === 'rest' ? '休息中…' : '冥想中…';
+  $('busy-box').classList.remove('hidden');
+  busyTick();
+  busyTimer = setInterval(busyTick, 100);
+  persist();
+  setTimeout(function () {
+    clearInterval(busyTimer);
+    busyTimer = null;
+    $('busy-box').classList.add('hidden');
+    if (!G) return;
+    G.busyUntil = 0;
+    if (kind === 'rest') {
+      G.sp = Math.min(G.sp + 10, maxFromSan().sp);
+      G.cdRest = Date.now() + 30000;
+      pop('精力 +10');
+    } else {
+      G.san = Math.min(100, G.san + 5);
+      G.cdMed = Date.now() + 30000;
+      pop('SAN +5');
+    }
+    addExp(1);
+    updateHUD();
+    persist();
+    syncActUI();
+    checkGhost();
+  }, 5000);
+}
+
+/* ---------- 背包 ---------- */
+function addItem(kind, n) {
+  if (!G) return;
+  G.inv = G.inv || {};
+  G.inv[kind] = (G.inv[kind] || 0) + (n || 1);
+  toast('获得:' + (CFG.ITEMS[kind] ? CFG.ITEMS[kind].name : kind) + ' ×' + (n || 1));
+  renderBag();
+}
+function renderBag() {
+  const box = $('bag-list');
+  if (!box) return;
+  const inv = (G && G.inv) || {};
+  let html = '';
+  const keys = Object.keys(inv).filter(function (k) { return inv[k] > 0; });
+  if (!keys.length) {
+    html = '<div class="contact-tip">背包里空空如也。遇到别人时,也许能捡到点什么。</div>';
+  } else {
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i];
+      const item = CFG.ITEMS[k] || { name: k, icon: '?' };
+      const usable = (k === 'hpPotion' || k === 'energyPotion' || k === 'bing');
+      html += '<div class="bag-row">' +
+        '<span class="bag-name">' + item.icon + ' ' + item.name + ' ×' + inv[k] + '</span>' +
+        (usable ? '<button class="btn-mini ok" data-use="' + k + '">使用</button>' : '<span class="bag-note">收藏</span>') +
+        '</div>';
+    }
+  }
+  box.innerHTML = html;
+  const btns = box.querySelectorAll('button[data-use]');
+  for (let i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      useItem(btns[i].getAttribute('data-use'));
+    });
+  }
+}
+function useItem(kind) {
+  if (!G || !G.inv || !G.inv[kind]) return;
+  if (busyLeft() > 0) { toast('正在' + busyKindName() + '中'); return; }
+  if (ghostAction()) return;
+  const max = maxFromSan();
+  if (kind === 'hpPotion') {
+    const heal = 1 + Math.floor(Math.random() * 20);
+    G.hp = Math.min(G.hp + heal, max.hp);
+    pop('血量 +' + heal);
+  } else if (kind === 'energyPotion') {
+    const heal = 1 + Math.floor(Math.random() * 20);
+    G.sp = Math.min(G.sp + heal, max.sp);
+    pop('精力 +' + heal);
+  } else if (kind === 'bing') {
+    G.buffUntil = Date.now() + 120000;
+    G.buffNext = Date.now() + 7000;
+    G.san = Math.max(0, G.san - 20);
+    pop('烧饼生效 2 分钟 · SAN-20');
+    checkGhost();
+  } else {
+    toast('这个物品现在用不上');
+    return;
+  }
+  G.inv[kind]--;
+  if (G.inv[kind] <= 0) delete G.inv[kind];
+  clampStats();
+  renderBag();
+  updateHUD();
+  persist();
+}
+
+/* ---------- 遭遇与战斗 ---------- */
+let F = null;
+function rollEnemy(base) {
+  const e = clone(base);
+  e.maxHp = e.hp;
+  e.atk = Array.isArray(base.atk) ? base.atk[0] + Math.floor(Math.random() * (base.atk[1] - base.atk[0] + 1)) : base.atk;
+  e.def = Array.isArray(base.def) ? base.def[0] + Math.floor(Math.random() * (base.def[1] - base.def[0] + 1)) : base.def;
+  return e;
+}
+function startBattle(e) {
+  if (!G || dlgBusy) return;
+  if (G.ghost) { toast('那些影子已经不需要战斗了'); return; }
+  if (busyLeft() > 0) { toast('正在' + busyKindName() + '中'); return; }
+  F = e;
+  F.attacked = false;
+  F.log = e.align === 'evil' ? '它的动作很不自然……' : '你们对视着。';
+  if (e.weird) {
+    G.san = Math.max(0, G.san - 5);
+    toast('遇到诡异,失去 5 点 SAN');
+  }
+  $('foe-box').classList.remove('hidden');
+  AudioMgr.sfx('event');
+  renderFoe();
+  updateHUD();
+  if (e.align === 'evil') {
+    // 邪恶生物先手攻击
+    setTimeout(function () { if (F) { foeHit(); renderFoe(); updateHUD(); } }, 600);
+  }
+}
+function renderFoe() {
+  if (!F) return;
+  const an = F.align === 'evil' ? '邪恶' : (F.align === 'kind' ? '善良' : '中立');
+  $('foe-name').textContent = F.name;
+  $('foe-tag').textContent = (F.weird ? '诡异 · ' : '') + an + ' · 攻' + F.atk + ' 防' + F.def;
+  $('foe-hp').style.width = Math.max(0, F.hp / F.maxHp * 100) + '%';
+  $('foe-hp-num').textContent = Math.max(0, Math.round(F.hp)) + '/' + F.maxHp;
+  $('foe-log').textContent = F.log;
+}
+function foeHit() {
+  if (!F || !G) return;
+  const lv = lvlData();
+  const dmg = Math.max(0, F.atk - lv.def);
+  G.hp = Math.max(0, G.hp - dmg);
+  F.log += ' 它反击,造成 ' + dmg + ' 点伤害。';
+  pop('血量 -' + dmg);
+  clampStats();
+  updateHUD();
+  if (G.hp <= 0) { endBattle('lose'); }
+}
+function attackFoe() {
+  if (!F || !G || dlgBusy) return;
+  if (busyLeft() > 0) { toast('正在' + busyKindName() + '中'); return; }
+  if (ghostAction()) return;
+  const lv = lvlData();
+  const dmg = Math.max(0, lv.atk - F.def);
+  F.hp -= dmg;
+  F.attacked = true;
+  F.log = '你造成 ' + dmg + ' 点伤害' + (dmg === 0 ? '(全部被防御住了)' : '') + '。';
+  AudioMgr.sfx('tap');
+  if (F.hp <= 0) { endBattle('win'); return; }
+  if (F.align === 'evil' || F.align === 'neutral') {
+    setTimeout(function () { if (F) { foeHit(); renderFoe(); updateHUD(); } }, 450);
+  } else {
+    F.log += ' 它没有还手。';
+    renderFoe();
+  }
+  updateHUD();
+}
+function fleeBattle() {
+  if (!F) return;
+  F = null;
+  $('foe-box').classList.add('hidden');
+  toast('你退开了几步。');
+}
+function endBattle(kind) {
+  if (!F) return;
+  const name = F.name;
+  if (kind === 'win') {
+    F = null;
+    $('foe-box').classList.add('hidden');
+    addExp(5);
+    let drop;
+    const r = Math.random();
+    if (r < 0.30) drop = 'energyPotion';
+    else if (r < 0.60) drop = 'hpPotion';
+    else if (r < 0.78) drop = 'paper';
+    else if (r < 0.90) drop = 'pen';
+    else drop = 'bing';
+    toast('「' + name + '」逃走了,丢下了' + CFG.ITEMS[drop].name);
+    addItem(drop);
+    updateHUD();
+    persist();
+  } else {
+    F = null;
+    $('foe-box').classList.add('hidden');
+    G.hp = 0;
+    G.dead = true;
+    G.deadReason = 'hp';
+    persist();
+    showEnd(false);
+  }
+}
+/* 移动/教室后有一定概率遭遇 */
+function maybeEncounter(area) {
+  if (!G || G.ghost || dlgBusy) return;
+  if (window.__testNoEnc) return;
+  if (F) return;
+  if (busyLeft() > 0) return;
+  if (Math.random() > 0.3) return;
+  let pool;
+  if (area === 'play') {
+    pool = CFG.ENEMIES.play;
+  } else if (Math.random() < 0.06) {
+    startBattle(rollEnemy(CFG.ENEMIES.zhang));
+    return;
+  } else if (Math.random() < 0.25) {
+    pool = CFG.ENEMIES.weird;
+  } else {
+    pool = CFG.ENEMIES.hall;
+  }
+  startBattle(rollEnemy(pool[Math.floor(Math.random() * pool.length)]));
+}
+
+/* ---------- 诡化 ---------- */
+let ghostTimer = null;
+function ghostAction() {
+  if (!G || !G.ghost) return false;
+  G.ghostLeft = (G.ghostLeft || 0) - 1;
+  persist();
+  if (G.ghostLeft <= 0) {
+    endGhost();
+    return true;
+  }
+  return false;
+}
+function checkGhost() {
+  if (!G || G.ghost) return;
+  if (G.san > 0) return;
+  G.ghost = true;
+  G.ghostLeft = 3;
+  G.hp = 99999;
+  G.sp = 99999;
+  $('ghost-overlay').classList.remove('hidden');
+  ghostTick();
+  ghostTimer = setInterval(ghostTick, 1600);
+  toast('你的精神崩断了……');
+  AudioMgr.sfx('lose');
+  updateHUD();
+  persist();
+}
+function ghostTick() {
+  if (!G || !G.ghost) return;
+  const ov = $('ghost-overlay');
+  const t = CFG.GHOST_TEXTS[Math.floor(Math.random() * CFG.GHOST_TEXTS.length)];
+  const el = document.createElement('div');
+  el.className = 'ghost-text';
+  el.style.left = (5 + Math.random() * 60) + '%';
+  el.style.top = (8 + Math.random() * 80) + '%';
+  el.textContent = t;
+  ov.appendChild(el);
+  if (ov.children.length > 14) ov.removeChild(ov.firstChild);
+}
+function endGhost() {
+  if (ghostTimer) { clearInterval(ghostTimer); ghostTimer = null; }
+  const ov = $('ghost-overlay');
+  ov.classList.add('ghost-final');
+  G.dead = true;
+  G.deadReason = 'ghost';
+  persist();
+  setTimeout(function () {
+    $('end-title').textContent = '迷失';
+    $('end-text').textContent = CFG.GHOST_ENDING + '。';
+    $('end-title').style.color = '#ff2d55';
+    show('scr-end');
+  }, 900);
 }
 
 function moveDir(dxDir, dyDir) {
@@ -682,7 +1062,10 @@ function onNodeTap(id, floor) {
 
 function moveTo(id, floor, via) {
   if (dlgBusy || G.inRoom) return;
+  if (F) { toast('先处理眼前的遭遇'); return; }
+  if (busyLeft() > 0) { toast('你正在' + busyKindName() + '中,不能动'); return; }
   if (G.sp <= 0) { toast('精力耗尽,走不动了。点右上角「行为」休息一下'); return; }
+  if (ghostAction()) return;
   const oldFloor = G.floor;
   G.sp = Math.max(0, G.sp - 2);
   G.floor = floor;
@@ -706,17 +1089,25 @@ function moveTo(id, floor, via) {
     else if (!dlgBusy) runEvent(CFG.EVENTS.gate);
     return;
   }
-  if (G.flags.spawn && !dlgBusy && Math.random() < 0.22) {
+  if (G.flags.spawn && !dlgBusy && !window.__testNoEvt && Math.random() < 0.22) {
     runEvent(CFG.EVENTS.random[Math.floor(Math.random() * CFG.EVENTS.random.length)]);
+    return;
+  }
+  if (!dlgBusy) {
+    const area = G.nodeId.indexOf('PG') === 0 ? 'play' : 'hall';
+    maybeEncounter(area);
   }
 }
 
 /* ---------- 进入教室 ---------- */
 function enterRoom() {
   if (dlgBusy || !G || G.inRoom) return;
+  if (F) { toast('先处理眼前的遭遇'); return; }
+  if (busyLeft() > 0) { toast('你正在' + busyKindName() + '中,不能动'); return; }
   const nr = nearRoom(G.floor, G.nodeId);
   if (!nr) return;
   if (G.sp <= 0) { toast('精力耗尽,先休息一下吧'); return; }
+  if (ghostAction()) return;
   G.sp = Math.max(0, G.sp - 2);
   const isOwn = nr.cls === G.cls;
   const key = 'room:' + G.floor + ':' + nr.slot;
@@ -740,13 +1131,17 @@ function enterRoom() {
 /* ---------- 剧情效果 ---------- */
 function applyFx(fx) {
   if (!fx) return;
-  if (fx.hp) G.hp = clamp(G.hp + fx.hp, 0, 100);
-  if (fx.sp) G.sp = clamp(G.sp + fx.sp, 0, 100);
+  const max = maxFromSan();
+  if (fx.hp) G.hp = clamp(G.hp + fx.hp, 0, max.hp);
+  if (fx.sp) G.sp = clamp(G.sp + fx.sp, 0, max.sp);
   if (fx.san) G.san = clamp(G.san + fx.san, 0, 100);
   if (fx.flag) G.flags[fx.flag] = true;
   if (fx.next === 'win') G.won = true;
+  if (fx.item) addItem(fx.item);
+  clampStats();
   G.form = calcForm();
   updateHUD();
+  checkGhost();
 }
 
 function resolveChoice(c) {
@@ -864,6 +1259,7 @@ function runEvent(evt) {
       updateBg();
       updateHUD();
       if (mapOpen) { renderMap(); }
+      if (Math.random() < 0.2) { maybeEncounter('hall'); }
     }
     persist();
     checkEnd();
@@ -886,7 +1282,7 @@ function checkEnd() {
   if (!G) return;
   if (G.won) { showEnd(true); return; }
   if (G.hp <= 0) { G.dead = true; G.deadReason = 'hp'; persist(); showEnd(false); return; }
-  if (G.san <= 0) { G.dead = true; G.deadReason = 'san'; persist(); showEnd(false); return; }
+  if (G.san <= 0) { checkGhost(); return; }
 }
 
 /* ---------- 结局 ---------- */
@@ -934,6 +1330,10 @@ function newGame(name, grade, dept, num) {
     grade: grade, dept: dept, num: num, cls: cls,
     floor: pos.floor, nodeId: node.id, loc: 'classroom',
     hp: 100, sp: 100, san: 100,
+    lv: 1, exp: 0, inv: {},
+    ghost: false, ghostLeft: 0,
+    buffUntil: 0, buffNext: 0,
+    cdRest: 0, cdMed: 0, busyUntil: 0, busyKind: '',
     form: '清醒', steps: 0,
     flags: {}, classMap: classMap,
     won: false, dead: false, deadReason: null,
@@ -960,8 +1360,21 @@ function loadSave(id) {
   cancelDlg();
   G = clone(s);
   if (G.gt === undefined) { G.gt = GT0; G.rt = Date.now(); }
+  if (G.lv === undefined) G.lv = 1;
+  if (G.exp === undefined) G.exp = 0;
+  if (!G.inv) G.inv = {};
+  if (G.ghost === undefined) G.ghost = false;
+  if (G.buffUntil === undefined) G.buffUntil = 0;
+  if (G.cdRest === undefined) G.cdRest = 0;
+  if (G.cdMed === undefined) G.cdMed = 0;
+  G.busyUntil = 0;
   G.inRoom = false;
   mapOpen = false;
+  $('ghost-overlay').classList.add('hidden');
+  $('foe-box').classList.add('hidden');
+  $('busy-box').classList.add('hidden');
+  F = null;
+  clampStats();
   if (G.won) {
     G.floor = 1; G.nodeId = 'GATE'; G.loc = 'gate';
     persist();
@@ -975,6 +1388,8 @@ function loadSave(id) {
     G.floor = pos.floor; G.nodeId = node.id; G.loc = 'classroom';
     G.hp = 100; G.sp = 100; G.san = 100;
     G.dead = false; G.deadReason = null;
+    G.ghost = false; G.ghostLeft = 0;
+    G.buffUntil = 0;
     G.form = '清醒';
     persist();
     showGame();
@@ -1082,6 +1497,8 @@ function renderCard() {
 
 /* ---------- 初始化 ---------- */
 function init() {
+  if (window.__initDone) return;   // 防止 DOMContentLoaded 重复触发导致事件重复绑定
+  window.__initDone = true;
   document.addEventListener('pointerdown', function () {
     AudioMgr.boot();
     AudioMgr.startMusic(Store.settings().music);
@@ -1093,6 +1510,17 @@ function init() {
       $('game-clock').textContent = fmtGameTime(gameNow());
     }
     if (!$('act-box').classList.contains('hidden')) syncActUI();
+    /* 烧饼 buff:每 7 秒回复 */
+    if (G && !G.ghost && G.buffUntil && G.buffUntil > Date.now()) {
+      if (!G.buffNext || Date.now() >= G.buffNext) {
+        G.buffNext = Date.now() + 7000;
+        const m = maxFromSan();
+        G.hp = Math.min(G.hp + 5, m.hp);
+        G.sp = Math.min(G.sp + 5, m.sp);
+        pop('烧饼:血量+5 精力+5');
+        updateHUD();
+      }
+    }
   }, 1000);
 
   /* 对话头像加载失败回退 */
@@ -1181,31 +1609,34 @@ function init() {
   $('btn-menu').addEventListener('click', openGmenu);
   $('btn-act').addEventListener('click', openAct);
 
+  /* 背包 */
+  $('btn-bag').addEventListener('click', function () {
+    AudioMgr.sfx('open');
+    renderBag();
+    $('bag-box').classList.remove('hidden');
+  });
+  $('btn-bag-close').addEventListener('click', function () {
+    AudioMgr.sfx('tap');
+    $('bag-box').classList.add('hidden');
+  });
+
+  /* 状态详情 */
+  $('btn-status-close').addEventListener('click', function () {
+    AudioMgr.sfx('tap');
+    $('status-box').classList.add('hidden');
+  });
+
   /* 行为面板 */
   $('btn-act-close').addEventListener('click', function () {
     AudioMgr.sfx('tap');
     $('act-box').classList.add('hidden');
   });
-  $('btn-act-rest').addEventListener('click', function () {
-    if (!G || cdLeft('cdRest') > 0) return;
-    AudioMgr.sfx('move');
-    const before = G.sp;
-    applyFx({ sp: 10 });
-    G.cdRest = Date.now() + 30000;
-    toast('休息:精力+' + (G.sp - before));
-    persist();
-    syncActUI();
-  });
-  $('btn-act-med').addEventListener('click', function () {
-    if (!G || cdLeft('cdMed') > 0) return;
-    AudioMgr.sfx('event');
-    const before = G.san;
-    applyFx({ san: 5 });
-    G.cdMed = Date.now() + 30000;
-    toast('冥想:SAN+' + (G.san - before));
-    persist();
-    syncActUI();
-  });
+  $('btn-act-rest').addEventListener('click', function () { doAct('rest'); });
+  $('btn-act-med').addEventListener('click', function () { doAct('med'); });
+
+  /* 战斗 */
+  $('btn-foe-attack').addEventListener('click', attackFoe);
+  $('btn-foe-flee').addEventListener('click', fleeBattle);
 
   /* 地图 */
   $('btn-map-back').addEventListener('click', function () {

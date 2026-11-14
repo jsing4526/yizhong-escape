@@ -133,20 +133,28 @@
     <div class="bg-veil"></div>
     <div class="clock" id="game-clock">2026.10.30 06:00</div>
     <div class="game-floor" id="game-floor">1F</div>
+    <div class="status-col" id="status-col"></div>
     <div class="hud">
       <div class="hud-top">
         <span class="hud-name" id="hud-name">—</span>
+        <span class="hud-lv" id="hud-lv">Lv.1</span>
         <span class="hud-form" id="hud-form">清醒</span>
+      </div>
+      <div class="exp-row">
+        <div class="exp-bar"><div class="exp-fill" id="exp-fill" style="width:0%"></div></div>
+        <span class="exp-num" id="exp-num">0 / 5</span>
       </div>
       <div class="hud-cls" id="hud-cls">—</div>
       <div class="hud-loc" id="hud-loc">—</div>
-      <div class="stat-row"><span class="stat-name">血量</span><div class="stat-bar"><div class="stat-fill" id="hp-fill" style="width:100%"></div></div><span class="stat-num" id="hp-num">100</span></div>
-      <div class="stat-row"><span class="stat-name">精力</span><div class="stat-bar"><div class="stat-fill" id="sp-fill" style="width:100%"></div></div><span class="stat-num" id="sp-num">100</span></div>
-      <div class="stat-row"><span class="stat-name">SAN</span><div class="stat-bar"><div class="stat-fill" id="san-fill" style="width:100%"></div></div><span class="stat-num" id="san-num">100</span></div>
+      <div class="stat-row"><span class="stat-name">血量</span><div class="stat-bar"><div class="stat-fill" id="hp-fill" style="width:100%"></div></div><span class="stat-num" id="hp-num">100/100</span></div>
+      <div class="stat-row"><span class="stat-name">精力</span><div class="stat-bar"><div class="stat-fill" id="sp-fill" style="width:100%"></div></div><span class="stat-num" id="sp-num">100/100</span></div>
+      <div class="stat-row"><span class="stat-name">SAN</span><div class="stat-bar"><div class="stat-fill" id="san-fill" style="width:100%"></div></div><span class="stat-num" id="san-num">100/100</span></div>
+      <div class="stat-pop" id="stat-pop"></div>
     </div>
     <button class="icon-btn tr" id="btn-map">🗺️ 地图</button>
     <button class="icon-btn tr2" id="btn-act">⚡ 行为</button>
-    <button class="icon-btn tr3" id="btn-menu">⚙️ 设置</button>
+    <button class="icon-btn tr3" id="btn-bag">🎒 背包</button>
+    <button class="icon-btn tr4" id="btn-menu">⚙️ 设置</button>
   </div>
 
   <!-- ================= 地图 ================= -->
@@ -255,12 +263,65 @@
         <button class="act-btn" id="btn-act-rest">休息 +10精力</button>
         <button class="act-btn" id="btn-act-med">冥想 +5SAN</button>
       </div>
-      <div class="contact-tip">两个行为各有 30 秒冷却</div>
+      <div class="contact-tip">两个行为各需读条 5 秒,冷却 30 秒</div>
       <div class="gm-btns">
         <button class="pill" id="btn-act-close">关闭</button>
       </div>
     </div>
   </div>
+
+  <!-- ================= 背包 ================= -->
+  <div class="overlay hidden" id="bag-box">
+    <div class="sheet">
+      <div class="sheet-title">🎒 背包</div>
+      <div class="bag-list" id="bag-list"></div>
+      <div class="gm-btns">
+        <button class="pill" id="btn-bag-close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 状态详情 ================= -->
+  <div class="overlay hidden" id="status-box">
+    <div class="sheet">
+      <div class="sheet-title" id="status-title">状态</div>
+      <div class="contact-line" id="status-desc">—</div>
+      <div class="gm-btns">
+        <button class="pill" id="btn-status-close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 战斗 ================= -->
+  <div class="overlay hidden" id="foe-box">
+    <div class="sheet">
+      <div class="foe-head">
+        <div class="foe-pic">?</div>
+        <div class="foe-info">
+          <div class="foe-name" id="foe-name">?</div>
+          <div class="foe-tag" id="foe-tag"></div>
+          <div class="stat-row"><span class="stat-name">血量</span><div class="stat-bar"><div class="stat-fill foe-hp" id="foe-hp" style="width:100%"></div></div><span class="stat-num" id="foe-hp-num">100/100</span></div>
+        </div>
+      </div>
+      <div class="foe-log" id="foe-log"></div>
+      <div class="gm-btns">
+        <button class="pill" id="btn-foe-attack">攻击</button>
+        <button class="pill" id="btn-foe-flee">离开</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 行为读条 ================= -->
+  <div class="overlay hidden" id="busy-box">
+    <div class="sheet">
+      <div class="sheet-title" id="busy-label">休息中…</div>
+      <div class="stat-bar busy-bar"><div class="stat-fill" id="busy-bar" style="width:0%"></div></div>
+      <div class="contact-tip">还剩 <span id="busy-left">5.0s</span>,期间不能移动</div>
+    </div>
+  </div>
+
+  <!-- ================= 诡化画面 ================= -->
+  <div class="ghost-overlay hidden" id="ghost-overlay"></div>
 
   <!-- ================= 联系作者 ================= -->
   <div class="overlay hidden" id="contact-box">
