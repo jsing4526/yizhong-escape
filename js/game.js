@@ -1183,7 +1183,7 @@ function moveTo(id, floor, via) {
 
   if (id === 'GATE') {
     if (G.won) { toast('你已经通关了!点右下角「冲出去」即可离开'); }
-    else if (!dlgBusy) runEvent(CFG.EVENTS.gate);
+    else if (!dlgBusy) runEvent(buildGateEvent());
     return;
   }
   if (G.flags.spawn && !dlgBusy && !window.__testNoEvt && Math.random() < 0.22) {
@@ -1234,6 +1234,14 @@ function applyFx(fx) {
   if (fx.san) G.san = clamp(G.san + fx.san, 0, 100);
   if (fx.flag) G.flags[fx.flag] = true;
   if (fx.next === 'win') G.won = true;
+  if (fx.pass) { G.flags.pass = true; toast('获得出门证 🎫'); }
+  if (fx.next === 'caught') {
+    G.flags.rushed = true;
+    G.floor = 1; G.nodeId = 'H330'; G.loc = 'corridor';
+    updateBg();
+    if (mapOpen) renderMap();
+    toast('你被门卫老赵抓了回来……再想冲出去,他不会给机会了');
+  }
   if (fx.item) addItem(fx.item);
   clampStats();
   G.form = calcForm();
@@ -1267,6 +1275,35 @@ function setDlgImg(img) {
     ic.style.display = 'block';
   }
 }
+/* ---------- 校门事件(一次性冲刺 20% / 出门证) ---------- */
+function buildGateEvent() {
+  const lines = [
+    { s: 'n', t: '大门口的电动门紧闭着,门卫室亮着昏黄的灯。' },
+    { s: 'g', t: '站住!都十点半了,哪个班的?出门条呢?' }
+  ];
+  const choices = [];
+  if (G.flags.pass) {
+    lines.push({ s: 'n', t: '你摸出那张盖了章的出门证。' });
+    choices.push({ t: '出示出门证', fx: { next: 'win' }, reply: { s: 'g', t: '嗯……章是真的。走吧,路上小心点。' } });
+    choices.push({ t: '把出门证收回去', fx: {}, reply: { s: 'g', t: '磨蹭什么呢?要不走,要不回去。' } });
+  } else if (G.flags.rushed) {
+    lines.push({ s: 'n', t: '老赵盯着你,眼神比刚才更硬了。' });
+    lines.push({ s: 'g', t: '又是你?刚才那一下我可是记住你了。今晚你别想再从这道门出去。' });
+    choices.push({ t: '“……我回去。”', fx: {}, reply: { s: 'n', t: '你只能转身走回楼里。' } });
+  } else {
+    lines.push({ s: 'n', t: '出门条你是没有的。冲出去的话,大概只有两成把握。' });
+    choices.push({
+      t: '冲出去!(成功率 20%)', fx: {},
+      rand: [
+        { p: 0.2, fx: { next: 'win' }, reply: { s: 'n', t: '你趁他低头的一瞬间撞开侧门,冲进了夜色里!' } },
+        { p: 0.8, fx: { next: 'caught' }, reply: { s: 'g', t: '跑?!给我回来!' } }
+      ]
+    });
+    choices.push({ t: '“……我回去拿。”', fx: {}, reply: { s: 'g', t: '快点!再磨蹭宿舍楼都锁门了。' } });
+  }
+  return { id: 'gatex', lines: lines, choices: choices };
+}
+
 /* ---------- 周边生物(剧情生物留在原地,离开点位才消失) ---------- */
 function enemyFor(key) {
   if (key === 'zhang') return CFG.ENEMIES.zhang;
@@ -1830,7 +1867,7 @@ function init() {
   $('btn-gate-act').addEventListener('click', function () {
     if (dlgBusy || !G) return;
     if (G.won) { showEnd(true); return; }
-    runEvent(CFG.EVENTS.gate);
+    runEvent(buildGateEvent());
   });
   $('btn-d-up').addEventListener('click', function () { moveDir(0, -1); });
   $('btn-d-down').addEventListener('click', function () { moveDir(0, 1); });
