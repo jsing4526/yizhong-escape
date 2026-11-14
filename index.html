@@ -194,6 +194,7 @@
       <span>★金边=你的教室</span>
     </div>
     <div class="map-class-panel hidden" id="map-class-panel"></div>
+    <button class="map-cb hidden" id="btn-cb">👥 周边生物</button>
   </div>
 
   <!-- ================= 结局 ================= -->
@@ -318,6 +319,19 @@
       <div class="sheet-title" id="busy-label">休息中…</div>
       <div class="stat-bar busy-bar"><div class="stat-fill" id="busy-bar" style="width:0%"></div></div>
       <div class="contact-tip">还剩 <span id="busy-left">5.0s</span>,期间不能移动</div>
+    </div>
+  </div>
+
+  <!-- ================= 周边生物 ================= -->
+  <div class="overlay hidden" id="cb-box">
+    <div class="sheet">
+      <div class="sheet-title">👥 周边生物</div>
+      <div id="cb-list"></div>
+      <div class="contact-tip">它就在你身边。攻击它,或者离开(移动后消失)。</div>
+      <div class="gm-btns">
+        <button class="pill" id="btn-cb-attack">攻击</button>
+        <button class="pill" id="btn-cb-close">离开</button>
+      </div>
     </div>
   </div>
 

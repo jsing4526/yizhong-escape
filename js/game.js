@@ -671,6 +671,7 @@ function renderMap() {
 
   renderClassPanel(f, occOf(f));
   updateMapActions();
+  updateCbBtn();
 }
 
 function renderClassPanel(f, occ) {
@@ -951,16 +952,17 @@ function attackFoe() {
 }
 function fleeBattle() {
   if (!F) return;
+  registerNearby(clone(F));
   F = null;
   $('foe-box').classList.add('hidden');
-  toast('你退开了几步。');
-}
-function endBattle(kind) {
+  toast('对方退到一旁,还在原地看着你。');
+}function endBattle(kind) {
   if (!F) return;
   const name = F.name;
   if (kind === 'win') {
     F = null;
     $('foe-box').classList.add('hidden');
+    clearNearby();
     addExp(5);
     let drop;
     const r = Math.random();
@@ -1133,6 +1135,8 @@ function moveTo(id, floor, via) {
     toast('到达 ' + CFG.floorNames[floor] + (st ? '(' + st + (via === 'up' ? '·上楼' : '·下楼') + ')' : ''));
   }
 
+  if (G.nearby) clearNearby();   // 离开点位后周边生物消失
+
   if (id === 'GATE') {
     if (G.won) { toast('你已经通关了!点右下角「冲出去」即可离开'); }
     else if (!dlgBusy) runEvent(CFG.EVENTS.gate);
@@ -1219,9 +1223,57 @@ function setDlgImg(img) {
     ic.style.display = 'block';
   }
 }
+/* ---------- 周边生物(剧情生物留在原地,离开点位才消失) ---------- */
+function enemyFor(key) {
+  if (key === 'zhang') return CFG.ENEMIES.zhang;
+  if (key === 'zhixi') return CFG.ENEMIES.hall[0];
+  return null;
+}
+function registerNearby(e) {
+  if (!G || !e) return;
+  G.nearby = e;
+  updateCbBtn();
+}
+function clearNearby() {
+  if (G) G.nearby = null;
+  updateCbBtn();
+}
+function updateCbBtn() {
+  const b = $('btn-cb');
+  if (!b) return;
+  const has = !!(G && G.nearby);
+  b.classList.toggle('hidden', !has);
+}
+function openCb() {
+  if (!G || !G.nearby) { toast('这附近已经没有人了'); return; }
+  renderCb();
+  $('cb-box').classList.remove('hidden');
+  AudioMgr.sfx('open');
+}
+function renderCb() {
+  const box = $('cb-list');
+  if (!box || !G || !G.nearby) return;
+  const e = G.nearby;
+  const an = e.align === 'evil' ? '邪恶' : (e.align === 'kind' ? '善良' : '中立');
+  box.innerHTML = '<div class="foe-head">' +
+    '<div class="foe-pic">?</div>' +
+    '<div class="foe-info">' +
+    '<div class="foe-name">' + e.name + '</div>' +
+    '<div class="foe-tag">Lv.' + e.lv + ' · ' + (e.weird ? '诡异 · ' : '') + an + ' · 攻' + e.atk + ' 防' + e.def + '</div>' +
+    '<div class="stat-row"><span class="stat-name">血量</span><div class="stat-bar"><div class="stat-fill foe-hp" style="width:' + Math.max(0, e.hp / e.maxHp * 100) + '%"></div></div><span class="stat-num">' + Math.max(0, Math.round(e.hp)) + '/' + e.maxHp + '</span></div>' +
+    '</div></div>';
+}
+function attackNearby() {
+  if (!G || !G.nearby) return;
+  const e = clone(G.nearby);
+  $('cb-box').classList.add('hidden');
+  startBattle(e);
+}
+
 function runEvent(evt) {
   if (dlgBusy || !G) return;
   if (evt.flag && G.flags[evt.flag]) return;
+  if (evt.enemy && !G.ghost) registerNearby(rollEnemy(enemyFor(evt.enemy)));
   dlgBusy = true;
   AudioMgr.sfx('event');
   const dlg = $('dlg');
@@ -1379,7 +1431,7 @@ function newGame(name, grade, dept, num) {
     grade: grade, dept: dept, num: num, cls: cls,
     floor: pos.floor, nodeId: node.id, loc: 'classroom',
     hp: 100, sp: 100, san: 100,
-    lv: 1, exp: 0, inv: {},
+    lv: 1, exp: 0, inv: {}, nearby: null,
     ghost: false, ghostLeft: 0,
     buffUntil: 0, buffNext: 0,
     cdRest: 0, cdMed: 0, busyUntil: 0, busyKind: '',
@@ -1418,10 +1470,13 @@ function loadSave(id) {
   if (G.cdMed === undefined) G.cdMed = 0;
   G.busyUntil = 0;
   G.inRoom = false;
+  G.nearby = null;
   mapOpen = false;
   $('ghost-overlay').classList.add('hidden');
   $('foe-box').classList.add('hidden');
   $('busy-box').classList.add('hidden');
+  $('cb-box').classList.add('hidden');
+  updateCbBtn();
   F = null;
   clampStats();
   if (G.won) {
@@ -1666,6 +1721,12 @@ function init() {
   });
   $('btn-menu').addEventListener('click', openGmenu);
   $('btn-act').addEventListener('click', openAct);
+  $('btn-cb').addEventListener('click', openCb);
+  $('btn-cb-attack').addEventListener('click', attackNearby);
+  $('btn-cb-close').addEventListener('click', function () {
+    AudioMgr.sfx('tap');
+    $('cb-box').classList.add('hidden');
+  });
 
   /* 背包 */
   $('btn-bag').addEventListener('click', function () {
