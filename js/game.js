@@ -424,7 +424,7 @@ function drawCorridors(g, f) {
 /* 全景图(整个学校) */
 function drawAll(g, f) {
   const fc = CFG.floorColors[f];
-  S('rect', { x: 0, y: 0, width: 400, height: 760, fill: 'rgba(7,11,18,0.62)' }, g);
+  S('rect', { x: 0, y: 0, width: 400, height: 760, fill: 'rgba(4,8,14,0.8)' }, g);
 
   /* 操场 / 宿舍 / 公寓 */
   S('rect', { x: 226, y: 150, width: 164, height: 390, rx: 8, fill: '#16281f', stroke: '#35523f', 'stroke-width': 2 }, g);
@@ -477,7 +477,7 @@ function drawAll(g, f) {
 /* 楼内视图(当前建筑,放大居中) */
 function drawBuilding(g, f, which) {
   const fc = CFG.floorColors[f];
-  S('rect', { x: 0, y: 0, width: 400, height: 760, fill: 'rgba(7,11,18,0.62)' }, g);
+  S('rect', { x: 0, y: 0, width: 400, height: 760, fill: 'rgba(4,8,14,0.8)' }, g);
   const d = CFG.DIST[f];
 
   if (which === 'eight') {

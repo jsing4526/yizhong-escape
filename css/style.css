@@ -463,6 +463,16 @@ body.light .dlg-text { text-shadow: none; }
 
 /* ---------- 地图 ---------- */
 #scr-map { background: transparent; }
+#scr-map .bg-img { z-index: 0; }
+#scr-map .map-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(3, 6, 11, 0.6);
+  pointer-events: none;
+}
+/* 地图内容全部浮在背景图与暗幕之上 */
+#scr-map > *:not(.bg-img):not(.map-veil) { position: relative; z-index: 2; }
 .map-top {
   display: flex;
   align-items: center;
