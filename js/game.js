@@ -506,7 +506,16 @@ function drawCorridors(g, f) {
     S('path', { d: segs[i], stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85 }, g);
   }
   if (f === 1) {
-    S('path', { d: 'M185 730 L330 630', stroke: fc, 'stroke-width': 7, 'stroke-linecap': 'round', opacity: 0.8, fill: 'none' }, g);
+    /* 连廊:8字右下角 → 横段楼最左节点 */
+    S('path', { d: 'M185 730 L250 630', stroke: fc, 'stroke-width': 7, 'stroke-linecap': 'round', opacity: 0.8, fill: 'none' }, g);
+    /* 8字右侧各节点 → 操场不同点位(细线) */
+    const pgLinks = [
+      'M185 380 L258 210', 'M185 440 L258 300', 'M185 525 L258 470',
+      'M185 600 L308 470', 'M185 660 L358 470'
+    ];
+    for (let i = 0; i < pgLinks.length; i++) {
+      S('path', { d: pgLinks[i], stroke: fc, 'stroke-width': 4, 'stroke-linecap': 'round', opacity: 0.45, fill: 'none' }, g);
+    }
   }
 }
 
@@ -541,7 +550,7 @@ function drawAll(g, f) {
     S('rect', { x: 312, y: 676, width: 10, height: 24, fill: '#0e1a2a', stroke: '#47617a', 'stroke-width': 1 }, g);
     S('rect', { x: 306, y: 700, width: 8, height: 34, fill: '#1a2c42' }, g);
     S('text', { x: 310, y: 746, 'text-anchor': 'middle', fill: '#ffd97a', 'font-size': 8 }, g).textContent = '大门口 → 校外';
-    S('text', { x: 257, y: 700, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 7 }, g).textContent = '连廊';
+    S('text', { x: 214, y: 700, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 7 }, g).textContent = '连廊';
   }
 
   if (f === 1) {
@@ -580,9 +589,16 @@ function drawBuilding(g, f, which) {
       S('path', { d: segs[i], stroke: fc, 'stroke-width': 11, 'stroke-linecap': 'round', opacity: 0.9 }, g);
     }
     if (f === 1) {
-      S('path', { d: 'M185 730 L240 665', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
+      S('path', { d: 'M185 730 L240 645', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
       S('text', { x: 206, y: 660, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '连廊→横段楼';
-      S('path', { d: 'M185 525 L240 525', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
+      /* 右侧各节点 → 操场(短引出线) */
+      const stubs = [
+        ['M185 380 L240 252', 0], ['M185 440 L240 335', 0], ['M185 525 L240 484', 1],
+        ['M185 600 L240 542', 0], ['M185 660 L240 600', 0]
+      ];
+      for (let i = 0; i < stubs.length; i++) {
+        S('path', { d: stubs[i][0], stroke: fc, 'stroke-width': 6, 'stroke-linecap': 'round', opacity: 0.5, fill: 'none' }, g);
+      }
       S('text', { x: 208, y: 510, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '操场侧门→';
     }
     drawRooms(g, f, CFG.mainSlots());
@@ -593,8 +609,8 @@ function drawBuilding(g, f, which) {
     S('text', { x: 310, y: 565, 'text-anchor': 'middle', fill: fc, 'font-size': 12 }, g).textContent = CFG.floorNames[f] + ' · ' + d.h.tag;
     S('path', { d: 'M250 630 L383 630', stroke: fc, 'stroke-width': 13, 'stroke-linecap': 'round', opacity: 0.9 }, g);
     if (f === 1) {
-      S('path', { d: 'M330 630 L185 730', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
-      S('text', { x: 240, y: 700, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '←连廊·8字楼';
+      S('path', { d: 'M250 630 L185 730', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
+      S('text', { x: 236, y: 700, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '←连廊·8字楼';
       S('path', { d: 'M308 470 L330 630', stroke: fc, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
       S('text', { x: 292, y: 540, 'text-anchor': 'end', fill: '#7ad7ff', 'font-size': 10 }, g).textContent = '操场入口↑';
       S('rect', { x: 298, y: 676, width: 10, height: 24, fill: '#0e1a2a', stroke: '#47617a', 'stroke-width': 1.2 }, g);
