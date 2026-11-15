@@ -972,3 +972,7 @@ body.light .hud {
 .hud-name { font-size: 12px; }
 .exp-bar { max-width: 100%; }
 .game-floor { z-index: 6; }
+
+/* ---------- 遭遇/周边生物头像 ---------- */
+.foe-pic { overflow: hidden; }
+.foe-pic-img { width: 100%; height: 100%; object-fit: cover; display: block; }

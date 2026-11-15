@@ -51,9 +51,9 @@ const CFG = {
 
   /* 操场九宫格点位(仅 1F 可达):上两排=上部图,下一排=下部图 */
   pgGrid: [
-    { id: 'PG11', x: 258, y: 210, up: true }, { id: 'PG12', x: 308, y: 210, up: true }, { id: 'PG13', x: 358, y: 210, up: true },
-    { id: 'PG21', x: 258, y: 300, up: true }, { id: 'PG22', x: 308, y: 300, up: true }, { id: 'PG23', x: 358, y: 300, up: true },
-    { id: 'PG31', x: 258, y: 470, up: false }, { id: 'PG32', x: 308, y: 470, up: false }, { id: 'PG33', x: 358, y: 470, up: false }
+    { id: 'PG11', x: 258, y: 210, up: true, row: 0, bg: 'top' }, { id: 'PG12', x: 308, y: 210, up: true, row: 0, bg: 'top' }, { id: 'PG13', x: 358, y: 210, up: true, row: 0, bg: 'top' },
+    { id: 'PG21', x: 258, y: 300, up: true, row: 1, bg: 'mid' }, { id: 'PG22', x: 308, y: 300, up: true, row: 1, bg: 'mid' }, { id: 'PG23', x: 358, y: 300, up: true, row: 1, bg: 'up' },
+    { id: 'PG31', x: 258, y: 470, up: false, row: 2, bg: 'down2' }, { id: 'PG32', x: 308, y: 470, up: false, row: 2, bg: 'down' }, { id: 'PG33', x: 358, y: 470, up: false, row: 2, bg: 'down' }
   ],
   pgLinks: [
     ['PG11', 'PG12'], ['PG12', 'PG13'], ['PG21', 'PG22'], ['PG22', 'PG23'], ['PG31', 'PG32'], ['PG32', 'PG33'],
@@ -158,7 +158,7 @@ const CFG = {
     hall: [
       { name: '值周生', hp: 40, atk: [3, 8], def: 0, align: 'neutral', weird: false },
       { name: '赶路的同学', hp: 40, atk: [2, 6], def: 0, align: 'kind', weird: false },
-      { name: '巡视的老师', hp: 40, atk: [6, 15], def: 0, align: 'neutral', weird: false },
+      { name: '巡视的老师', hp: 40, atk: [6, 15], def: 0, align: 'neutral', weird: false, pic: 'assets/images/portraits/teacher.jpg' },
       { name: '拖堂的老师', hp: 50, atk: [8, 15], def: 0, align: 'neutral', weird: false }
     ],
     weird: [
@@ -167,7 +167,7 @@ const CFG = {
       { name: '微笑着的学生', hp: 40, atk: [4, 9], def: 0, align: 'kind', weird: true },
       { name: '反复擦黑板的同学', hp: 40, atk: [3, 7], def: 0, align: 'neutral', weird: true }
     ],
-    zhang: { name: '张云祥老师', hp: 120, atk: 18, def: 0, align: 'neutral', weird: false }
+    zhang: { name: '张云祥老师', hp: 120, atk: 18, def: 0, align: 'neutral', weird: false, pic: 'assets/images/portraits/zhangyunxiang.jpg' }
   },
 
   /* ---------- 物品 ---------- */
@@ -329,13 +329,17 @@ const CFG = {
     classroom: 'assets/images/classroom.jpg',
     classroomOther: 'assets/images/classroom.jpg',
     corridor: 'assets/images/corridor.jpg',
+    corridor2: 'assets/images/corridor2.jpg',
     stair: 'assets/images/stair.jpg',
     hCorridor: 'assets/images/hbld-corridor.jpg',
     hStair: 'assets/images/hbld-stair.jpg',
     gate: 'assets/images/gate.jpg',
     home: 'assets/images/gate.jpg',
+    playgroundTop: 'assets/images/playground-top.jpg',
+    playgroundMid: 'assets/images/playground-mid.jpg',
     playgroundUp: 'assets/images/playground-up.jpg',
-    playgroundDown: 'assets/images/playground-down.jpg'
+    playgroundDown: 'assets/images/playground-down.jpg',
+    playgroundDown2: 'assets/images/playground-down2.jpg'
   },
 
   /* ---------- 教室剧情(进入其他教室触发) ---------- */
@@ -449,6 +453,7 @@ CFG.CHANGELOG = [
   { v: 'v0.3.1', t: '2026-11-15 00:45', c: '右下角连廊改通横段楼最左节点;8字右侧五个节点各通一个操场点位(右上/右下角除外)' },
   { v: 'v0.3.2', t: '2026-11-15 01:00', c: '方向键走廊优先(右侧各门需按"右"通过);修复走廊误显示教室背景;师生血量下调·防御归零·随机0-3级(邪恶更高级);主页新增更新日志' },
   { v: 'v0.3.3', t: '2026-11-15 01:20', c: '地图左侧新增「周边生物」:剧情人物(张云祥/值周生)出现后留在原地,可查看身份等级并决定是否攻击,离开当前点位后才消失;战斗逃跑后对方也会留在周边' },
+  { v: 'v0.3.8', t: '2026-11-15 10:55', c: '图片更新:随机老师/张云祥周边生物栏头像、校门大图、操场1排/2排左两/3排第一个独立新图、部分走廊新旧两图混合使用' },
   { v: 'v0.3.7', t: '2026-11-15 02:40', c: '属性栏收窄不再挡楼层;周边生物按钮常驻显示(无人时提示);出门证会进入背包 🎫' },
   { v: 'v0.3.6', t: '2026-11-15 02:25', c: '校门机制重做:冲出去只能试一次(成功率20%明确标注),失败会被门卫抓回楼里且从此不能再冲;可在剧情中收下同学赠送的出门证,在大门出示即可离开' },
   { v: 'v0.3.5', t: '2026-11-15 02:05', c: 'UI:左上角无底色小字属性(名称等级/经验条/身份/属性/状态,状态显示剩余时间);休息冥想改3秒且可中止;生物剧情升级(多段+选项);张云祥合并为一人;生物血量再下调' },

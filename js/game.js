@@ -175,9 +175,12 @@ function locInfo(floor, nodeId) {
   if (nodeId === 'GATE') return { type: 'gate', name: '大门口' };
   for (let i = 0; i < CFG.pgGrid.length; i++) {
     if (CFG.pgGrid[i].id === nodeId) {
-      return CFG.pgGrid[i].up
-        ? { type: 'playground-up', name: '操场 · 上部' }
-        : { type: 'playground-down', name: '操场 · 下部' };
+      const bg = CFG.pgGrid[i].bg;
+      if (bg === 'top') return { type: 'playground-top', name: '操场 · 1排' };
+      if (bg === 'mid') return { type: 'playground-mid', name: '操场 · 2排' };
+      if (bg === 'up') return { type: 'playground-up', name: '操场 · 2排' };
+      if (bg === 'down2') return { type: 'playground-down2', name: '操场 · 3排' };
+      return { type: 'playground-down', name: '操场 · 3排' };
     }
   }
   const nd = nodeXY(floor, nodeId);
@@ -357,6 +360,14 @@ function pop(text) {
   popTimer = setTimeout(function () { el.classList.remove('show'); }, 1800);
 }
 
+/* 走廊图片按位置确定性混合新旧两版 */
+function corrVariant(nodeId, floor, a, b) {
+  let h = 0;
+  const key = nodeId + '@' + floor;
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) % 997;
+  return h % 2 === 0 ? a : b;
+}
+
 function updateBg() {
   if (!G) return;
   const bg = $('game-bg');
@@ -367,10 +378,13 @@ function updateBg() {
   } else if (G.loc === 'classroom') src = CFG.bgs.classroom;
   else if (stairName(G.nodeId)) src = isInEight(G.nodeId) ? CFG.bgs.stair : CFG.bgs.hStair;
   else if (G.loc === 'gate') src = CFG.bgs.gate;
+  else if (G.loc === 'playground-top') src = CFG.bgs.playgroundTop;
+  else if (G.loc === 'playground-mid') src = CFG.bgs.playgroundMid;
   else if (G.loc === 'playground-up') src = CFG.bgs.playgroundUp;
+  else if (G.loc === 'playground-down2') src = CFG.bgs.playgroundDown2;
   else if (G.loc === 'playground-down') src = CFG.bgs.playgroundDown;
-  else if (isInEight(G.nodeId)) src = CFG.bgs.corridor;
-  else src = CFG.bgs.hCorridor;
+  else if (isInEight(G.nodeId)) src = corrVariant(G.nodeId, G.floor, CFG.bgs.corridor, CFG.bgs.corridor2);
+  else src = corrVariant(G.nodeId, G.floor, CFG.bgs.hCorridor, CFG.bgs.corridor2);
   if (bg.getAttribute('src') !== src) bg.setAttribute('src', src);
   /* 地图背景与场景背景联动 */
   const mb = $('map-bg');
@@ -570,8 +584,9 @@ function drawAll(g, f) {
   drawNodes(g, f, nodes, true);
 
   if (f === 1) {
-    S('text', { x: 308, y: 134, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 8 }, g).textContent = '上部(1-2排)';
-    S('text', { x: 308, y: 432, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 8 }, g).textContent = '下部(3排)';
+    S('text', { x: 308, y: 134, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 8 }, g).textContent = '1排';
+    S('text', { x: 308, y: 392, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 8 }, g).textContent = '2排';
+    S('text', { x: 308, y: 452, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 8 }, g).textContent = '3排';
   }
 }
 
@@ -632,8 +647,9 @@ function drawBuilding(g, f, which) {
       const a = nodeXY(f, CFG.pgLinks[i][0]), b = nodeXY(f, CFG.pgLinks[i][1]);
       if (a && b) S('path', { d: 'M' + a.x + ' ' + a.y + ' L' + b.x + ' ' + b.y, stroke: fc, 'stroke-width': 4, 'stroke-dasharray': '5 5', 'stroke-linecap': 'round', opacity: 0.45, fill: 'none' }, g);
     }
-    S('text', { x: 308, y: 128, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 11 }, g).textContent = '上部(1-2排)';
-    S('text', { x: 308, y: 448, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 11 }, g).textContent = '下部(3排)';
+    S('text', { x: 308, y: 128, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 11 }, g).textContent = '1排';
+    S('text', { x: 308, y: 392, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 11 }, g).textContent = '2排';
+    S('text', { x: 308, y: 448, 'text-anchor': 'middle', fill: '#cfe0f2', 'font-size': 11 }, g).textContent = '3排';
     S('path', { d: 'M185 525 L258 470', stroke: fc, 'stroke-width': 10, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
     S('text', { x: 210, y: 508, 'text-anchor': 'middle', fill: '#7ad7ff', 'font-size': 11 }, g).textContent = '←8字楼侧门';
     S('path', { d: 'M308 470 L330 630', stroke: fc, 'stroke-width': 10, 'stroke-linecap': 'round', opacity: 0.85, fill: 'none' }, g);
@@ -957,6 +973,8 @@ function encounterStory(e) {
 }
 function renderFoe() {
   if (!F) return;
+  const picEl = $('foe-box').querySelector('.foe-pic');
+  if (picEl) picEl.innerHTML = F.pic ? '<img class="foe-pic-img" src="' + F.pic + '" alt="">' : '?';
   const an = F.align === 'evil' ? '邪恶' : (F.align === 'kind' ? '善良' : '中立');
   $('foe-name').textContent = F.name;
   $('foe-tag').textContent = 'Lv.' + F.lv + ' · ' + (F.weird ? '诡异 · ' : '') + an + ' · 攻' + F.atk + ' 防' + F.def;
@@ -1340,7 +1358,7 @@ function renderCb() {
   const e = G.nearby;
   const an = e.align === 'evil' ? '邪恶' : (e.align === 'kind' ? '善良' : '中立');
   box.innerHTML = '<div class="foe-head">' +
-    '<div class="foe-pic">?</div>' +
+    '<div class="foe-pic">' + (e.pic ? '<img class="foe-pic-img" src="' + e.pic + '" alt="">' : '?') + '</div>' +
     '<div class="foe-info">' +
     '<div class="foe-name">' + e.name + '</div>' +
     '<div class="foe-tag">Lv.' + e.lv + ' · ' + (e.weird ? '诡异 · ' : '') + an + ' · 攻' + e.atk + ' 防' + e.def + '</div>' +
