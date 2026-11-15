@@ -47,6 +47,12 @@ function show(id) {
   const screens = document.querySelectorAll('.screen');
   for (let i = 0; i < screens.length; i++) screens[i].classList.remove('active');
   $(id).classList.add('active');
+  if (id !== 'scr-map') {
+    ['btn-gate-act', 'btn-stair-up', 'btn-stair-down', 'btn-enter-room'].forEach(function (hid) {
+      const el = $(hid);
+      if (el) el.classList.add('hidden');
+    });
+  }
 }
 
 /* ---------- 设置 ---------- */
@@ -305,6 +311,7 @@ function statusList() {
   else if (G.san < 20) arr.push({ k: 's2', n: '精神中度混乱', d: '血量与精力上限降为 60。耳边总有窃窃私语,分不清是谁在说话。' });
   else if (G.san < 40) arr.push({ k: 's1', n: '精神轻微混乱', d: '血量与精力上限降为 80。手脚发凉,总觉得身后有人。' });
   if (G.buffUntil && G.buffUntil > Date.now()) arr.push({ k: 'bing', n: '烧饼效果', left: Math.ceil((G.buffUntil - Date.now()) / 1000), d: '每 7 秒回复 5 点血量与精力。内心仍然不安。' });
+  if (G.inRoom && G.roomTeacher) arr.push({ k: 'class', n: '我听不懂', d: G.roomTeacher + '正在上课,你完全听不懂。每 7 秒 SAN-5。' });
   return arr;
 }
 
@@ -918,7 +925,14 @@ function rollEnemy(base) {
   } else {
     e.atk = base.atk;
   }
-  e.def = 0;
+  e.def = base.def || 0;
+  e.diff = diffLevel();
+  if (e.diff > 0) {
+    e.maxHp = Math.round(e.maxHp * (1 + 0.15 * e.diff));
+    e.hp = e.maxHp;
+    e.atk = Math.round(e.atk * (1 + 0.15 * e.diff));
+    e.def = e.def + e.diff;
+  }
   return e;
 }
 function startBattle(e) {
@@ -958,6 +972,10 @@ function encounterStory(e) {
   else pool = CFG.ENCOUNTER_STORIES.neutral;
   const tpl = pool[Math.floor(Math.random() * pool.length)];
   const lines = [];
+  if (e.openLine) {
+    lines.push({ s: e.speaker || 'n', t: e.openLine });
+    lines.push({ s: 'n', t: '你撞上了' + e.name + '。' });
+  }
   for (let i = 0; i < tpl.lines.length; i++) {
     lines.push({ s: 'n', t: tpl.lines[i].replace('{name}', e.name) });
   }
@@ -1014,18 +1032,29 @@ function attackFoe() {
 }
 function fleeBattle() {
   if (!F) return;
+  let dmg = 0;
+  if (F.align === 'evil') {
+    dmg = Math.max(0, Math.floor(F.atk * 0.5) - lvlData().def);
+    G.hp = Math.max(0, G.hp - dmg);
+    pop('逃跑时被它攻击,血量 -' + dmg);
+  }
   registerNearby(clone(F));
   F = null;
   $('foe-box').classList.add('hidden');
+  clampStats();
+  updateHUD();
+  if (G.hp <= 0) { G.dead = true; G.deadReason = 'hp'; persist(); showEnd(false); return; }
   toast('对方退到一旁,还在原地看着你。');
 }function endBattle(kind) {
   if (!F) return;
   const name = F.name;
   if (kind === 'win') {
+    const diff = F ? (F.diff || 0) : 0;
+    const boss = F ? F.boss : false;
     F = null;
     $('foe-box').classList.add('hidden');
     clearNearby();
-    addExp(5);
+    addExp(boss ? 20 + 5 * diff : 5 + 2 * diff);
     let drop;
     const r = Math.random();
     if (r < 0.30) drop = 'energyPotion';
@@ -1047,6 +1076,13 @@ function fleeBattle() {
     showEnd(false);
   }
 }
+/* 难度:每3分钟增强一次 */
+function diffLevel() {
+  if (!G) return 0;
+  if (!G.diffStart) G.diffStart = Date.now();
+  return Math.floor((Date.now() - G.diffStart) / 180000);
+}
+
 /* 移动/教室后有一定概率遭遇 */
 function maybeEncounter(area) {
   if (!G || G.ghost || dlgBusy) return;
@@ -1060,12 +1096,29 @@ function maybeEncounter(area) {
   } else if (Math.random() < 0.06) {
     startBattle(rollEnemy(CFG.ENEMIES.zhang));
     return;
+  } else if (Math.random() < 0.05) {
+    startBattle(rollEnemy(CFG.ENEMIES.zijian));
+    return;
   } else if (Math.random() < 0.25) {
     pool = CFG.ENEMIES.weird;
   } else {
     pool = CFG.ENEMIES.hall;
   }
   startBattle(rollEnemy(pool[Math.floor(Math.random() * pool.length)]));
+}
+
+/* 上课状态:每7秒掉5点SAN */
+function classTick() {
+  if (!G || !G.inRoom || !G.roomTeacher || G.ghost) return;
+  const now = Date.now();
+  if (!G.roomTick || now >= G.roomTick) {
+    G.roomTick = now + 7000;
+    G.san = Math.max(0, G.san - 5);
+    pop('听不懂:SAN -5');
+    updateHUD();
+    checkGhost();
+    persist();
+  }
 }
 
 /* ---------- 诡化 ---------- */
@@ -1229,18 +1282,42 @@ function enterRoom() {
   const visited = !!G.flags[key];
   G.flags[key] = true;
   G.inRoom = true;
+  const hasTeacher = !isOwn && Math.random() < 0.4;
+  G.roomTeacher = hasTeacher ? CFG.TEACHER_NAMES[Math.floor(Math.random() * CFG.TEACHER_NAMES.length)] : null;
+  if (G.roomTeacher) {
+    const bn = $('class-banner');
+    bn.textContent = '此教室正在上课 — ' + G.roomTeacher;
+    bn.classList.remove('hidden');
+  } else {
+    $('class-banner').classList.add('hidden');
+  }
   mapOpen = false;
   AudioMgr.sfx('open');
   show('scr-game');
   updateBg();
   updateHUD();
   persist();
-
   let evt;
-  if (isOwn && !G.flags.ownRoom) evt = CFG.ownRoom;
+  if (G.roomTeacher) evt = buildClassEvent(G.roomTeacher);
+  else if (isOwn && !G.flags.ownRoom) evt = CFG.ownRoom;
   else if (!visited) evt = CFG.roomEvents[Math.floor(Math.random() * CFG.roomEvents.length)];
   else evt = CFG.roomRepeat;
   runEvent(evt);
+}
+
+/* 教室在上课 */
+function buildClassEvent(name) {
+  return {
+    id: 'class',
+    lines: [
+      { s: 'n', t: '教室里灯亮着,' + name + '正站在讲台上讲课,黑板上写满了板书。' },
+      { s: 'n', t: '此教室正在上课。你一个字也听不懂。' }
+    ],
+    choices: [
+      { t: '在后排坐下听一会', fx: {}, reply: { s: 'n', t: '十分钟过去了,你什么都没听进去,只觉得头越来越疼。' } },
+      { t: '悄悄退出去', fx: {}, reply: { s: 'n', t: '你关上门,' + name + '的声音被隔断在里面。' } }
+    ]
+  };
 }
 
 /* ---------- 剧情效果 ---------- */
@@ -1459,6 +1536,8 @@ function runEvent(evt) {
     if (evt.flag) G.flags[evt.flag] = true;
     if (G.inRoom) {
       G.inRoom = false;
+      G.roomTeacher = null;
+      $('class-banner').classList.add('hidden');
       updateBg();
       updateHUD();
       if (mapOpen) { renderMap(); }
@@ -1717,6 +1796,7 @@ function init() {
       $('game-clock').textContent = fmtGameTime(gameNow());
     }
     if (!$('act-box').classList.contains('hidden')) syncActUI();
+    classTick();
     /* 烧饼 buff:每 7 秒回复 */
     if (G && !G.ghost && G.buffUntil && G.buffUntil > Date.now()) {
       if (!G.buffNext || Date.now() >= G.buffNext) {
@@ -1819,8 +1899,8 @@ function init() {
     mapMode = 'building';
     AudioMgr.sfx('open');
     $('map-class-panel').classList.add('hidden');
-    renderMap();
     show('scr-map');
+    renderMap();
   });
   $('btn-menu').addEventListener('click', openGmenu);
   $('btn-act').addEventListener('click', openAct);

@@ -129,7 +129,8 @@ const CFG = {
     z: { name: '值周生', color: '#c7a05a', icon: '🦺', img: 'assets/images/portraits/zhizhou.jpg' },
     m: { name: '神秘同学', color: '#9c7fd0', icon: '👤', img: 'assets/images/portraits/shenmi.jpg' },
     w: { name: '食堂·王阿姨', color: '#d0a05a', icon: '🍞', img: null },
-    l: { name: '学霸·小林', color: '#5aa0d0', icon: '🧑‍🎓', img: null }
+    l: { name: '学霸·小林', color: '#5aa0d0', icon: '🧑‍🎓', img: null },
+    j: { name: '张子健', color: '#d07a5a', icon: '🧑‍🏫', img: 'assets/images/portraits/zhangzijian.jpg' }
   },
 
   /* ---------- 等级与攻防 ---------- */
@@ -167,7 +168,8 @@ const CFG = {
       { name: '微笑着的学生', hp: 40, atk: [4, 9], def: 0, align: 'kind', weird: true },
       { name: '反复擦黑板的同学', hp: 40, atk: [3, 7], def: 0, align: 'neutral', weird: true }
     ],
-    zhang: { name: '张云祥老师', hp: 120, atk: 18, def: 0, align: 'neutral', weird: false, pic: 'assets/images/portraits/zhangyunxiang.jpg' }
+    zhang: { name: '张云祥老师', hp: 120, atk: 18, def: 0, align: 'neutral', weird: false, boss: true, pic: 'assets/images/portraits/zhangyunxiang.jpg' },
+    zijian: { name: '张子健', hp: 125, atk: 20, def: 10, align: 'neutral', weird: false, boss: true, pic: 'assets/images/portraits/zhangzijian.jpg', speaker: 'j', openLine: '快回教室,你要迟到了你知道不?!' }
   },
 
   /* ---------- 物品 ---------- */
@@ -179,6 +181,9 @@ const CFG = {
     bing: { name: '食堂的烧饼', icon: '🍞' },
     pass: { name: '出门证', icon: '🎫' }
   },
+
+  /* ---------- 上课老师 ---------- */
+  TEACHER_NAMES: ['王老师', '李老师', '赵老师', '孙老师', '刘老师', '周老师', '陈老师'],
 
   /* ---------- 诡化幻觉 ---------- */
   GHOST_TEXTS: [
@@ -453,6 +458,7 @@ CFG.CHANGELOG = [
   { v: 'v0.3.1', t: '2026-11-15 00:45', c: '右下角连廊改通横段楼最左节点;8字右侧五个节点各通一个操场点位(右上/右下角除外)' },
   { v: 'v0.3.2', t: '2026-11-15 01:00', c: '方向键走廊优先(右侧各门需按"右"通过);修复走廊误显示教室背景;师生血量下调·防御归零·随机0-3级(邪恶更高级);主页新增更新日志' },
   { v: 'v0.3.3', t: '2026-11-15 01:20', c: '地图左侧新增「周边生物」:剧情人物(张云祥/值周生)出现后留在原地,可查看身份等级并决定是否攻击,离开当前点位后才消失;战斗逃跑后对方也会留在周边' },
+  { v: 'v0.4.0', t: '2026-11-15 11:20', c: '新增Boss张子健(125血/攻20/防10,台词"快回教室,你要迟到了你知道不?!");张子健与张云祥为Boss,击败+20经验;生物每3分钟增强一次(血攻+15%/防+1),掉落经验随难度上涨;邪恶生物逃跑仍受其50%攻击伤害;部分教室刷新上课老师:"此教室正在上课"+"我听不懂"状态,每7秒SAN-5;修复大门口"冲出去"按钮不消失;全量自检并优化UI' },
   { v: 'v0.3.8', t: '2026-11-15 10:55', c: '图片更新:随机老师/张云祥周边生物栏头像、校门大图、操场1排/2排左两/3排第一个独立新图、部分走廊新旧两图混合使用' },
   { v: 'v0.3.7', t: '2026-11-15 02:40', c: '属性栏收窄不再挡楼层;周边生物按钮常驻显示(无人时提示);出门证会进入背包 🎫' },
   { v: 'v0.3.6', t: '2026-11-15 02:25', c: '校门机制重做:冲出去只能试一次(成功率20%明确标注),失败会被门卫抓回楼里且从此不能再冲;可在剧情中收下同学赠送的出门证,在大门出示即可离开' },
